@@ -1,7 +1,10 @@
 import kivy
 
 from kivy.app import App
+from kivy.lang import Builder
 from kivy.uix.widget import Widget
+from kivy.core.text import LabelBase
+
 
 class BisprendEngine(Widget):
     pass
@@ -20,6 +23,11 @@ class User:
 
     def updateuserprogress(self, newprog:int):
         self.__progress = newprog
+
+#Registering Font
+LabelBase.register(name="Mont",
+    fn_regular= "Mont-HeavyDEMO.otf"
+)
 
 if __name__ == '__main__':
     BisprendApp().run()
