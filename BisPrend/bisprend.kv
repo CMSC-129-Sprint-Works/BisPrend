@@ -1,0 +1,46 @@
+#:kivy 2.0.0
+
+<BisprendEngine>:
+    FloatLayout:
+        orientation: 'vertical'
+        canvas:
+            Rectangle:
+                size: root.width, root.height
+                source: 'bg-1.png'
+
+        Label:
+            font_size: 85
+            font_name: "Mont"
+            center_x: root.width / 2
+            top: root.top - 20
+            text: "Pangalan"
+            color: 0.12,0.12,0.12
+
+        TextInput:
+            id: username
+            font_size: 30
+            font_name: "Mont"
+            size_hint: (4.5,0.5)
+            center_x: root.width / 2
+            top: root.top - 150
+
+
+        Button:
+            background_color: 0,0,0
+            text: "Confirm"
+            color: 1,1,1
+            font_size: 30
+            font_name: "Mont"
+            size_hint: (4.5,0.5)
+            center_x: root.width / 2
+            top: root.top - 210
+            text: "Ok"
+            color: 1,1,1
+            on_release: root.btn()
+
+<BisprendPopup>:
+    Label:
+        text: "Welcome!"
+        size_hint: 0.6, 0.8
+        pos_hint: {"x": 0.2, "top": 1}
+
