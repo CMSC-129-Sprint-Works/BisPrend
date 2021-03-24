@@ -20,26 +20,35 @@ class User:
 
     def registername(self, newname):
         self.__name = newname
-        print(self.__name)
-        print("Progress: " + str(self.__progress))
 
     def updateuserprogress(self, newprog:int):
         self.__progress = newprog
 
+    def getName(self):
+        return self.__name
+
     def getProgress(self):
         return self.__progress
+
 
 class BisprendEngine(Widget):
     newPlayer = User()
     def checkProgress(self):
-        if self.newPlayer.getProgress() == 0:
-            name = self.player.text
-            self.newPlayer.registername(name)
+        pass
 
+    # called when the button is pressed/released
     def btn(self):
+        self.createUserFile()
+        print(f"Name: {self.newPlayer.getName()} \nProgress: {self.newPlayer.getProgress()}")
         popup = BisprendPopup()
-        self.checkProgress()
         popup.show_popup()
+
+    # create user file after registration (or when the "ok"/"confirm" button is pressed/released)
+    def createUserFile(self):
+        userFile = open("userfile.txt", "w")
+        userFile.write(self.player.text + "\n0")
+        self.newPlayer.registername(self.player.text)
+        userFile.close()
 
 
 class BisprendPopup(FloatLayout):
@@ -56,11 +65,9 @@ class BisprendApp(App):
         return engine
 
 
-
-
 #Registering Font
 LabelBase.register(name="Mont",
-    fn_regular= "Mont-HeavyDEMO.otf"
+    fn_regular= "BisPrend\Mont-HeavyDEMO.otf"
 )
 
 if __name__ == '__main__':

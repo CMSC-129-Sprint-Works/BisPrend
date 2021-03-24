@@ -15,8 +15,15 @@ Config.set('graphics', 'resizable', True)
 
 class BisprendEngine(Widget):
     def btn(self):
+        self.createUserFile()
         popup = BisprendPopup()
         popup.show_popup()
+    
+    # create user file after registration (or when the "ok"/"confirm" button is pressed/released)
+    def createUserFile(self):
+        userFile = open("userfile.txt", "w")
+        userFile.write(self.name.text + "\n0")
+        userFile.close()
 
 
 class BisprendPopup(FloatLayout):
