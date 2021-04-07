@@ -10,6 +10,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 
+import xml.etree.ElementTree as ET 
 
 Config.set('graphics', 'resizable', True)
 
@@ -17,8 +18,10 @@ class User:
     def __init__(self):
         self.__name = ""
         self.__progress = 0
+        self.__nouser = True
+        self.checkFile()
 
-    def registername(self, newname):
+    def registername(self, newname:str):
         self.__name = newname
 
     def updateuserprogress(self, newprog:int):
@@ -26,30 +29,68 @@ class User:
 
     def getName(self):
         return self.__name 
-        #im assuming this is for the file saving -kiev
 
     def getProgress(self):
         return self.__progress
 
+    def hasUser(self):
+        return self.__nouser
+    
+    def checkFile(self):
+        try:
+            tree = ET.parse("items.xml")
+            root = tree.getroot()
+
+            for elem in root:
+                subelem = elem.findall("datum")
+                self.__name = subelem[0].text
+                self.__progress = subelem[1].text
+
+            self.__nouser = False
+
+        except FileNotFoundError:
+            self.__nouser = True
+        except ET.ParseError:
+            self.__nouser = True
+    
+    def createUserFile(self,name:str):
+        self.__name = name
+        self.__progress = 0
+        self.__nouser = False
+        data = ET.Element("data")
+        item = ET.SubElement(data,"items")
+        log1 = ET.SubElement(item,"datum")
+        log2 = ET.SubElement(item,"datum")
+        log1.set("name","name")
+        log2.set("name","progress")
+        log1.text = name
+        log2.text = "0"
+
+        toET = ET.ElementTree()
+        toET._setroot(data)
+        toET.write("items.xml")
+        print("wrote in items.xml")
 
 class BisprendEngine(Widget):
+    #//should be called on the welcome page
+    # def checkProgress(self):
+    #     if newPlayer.hasUser():
+    #         #do something
+    #         pass
     newPlayer = User()
-    def checkProgress(self):
-        pass
-
     # called when the button is pressed/released
     def btn(self):
-        self.createUserFile()
+        self.newPlayer.createUserFile(self.player.text)
         print(f"Name: {self.newPlayer.getName()} \nProgress: {self.newPlayer.getProgress()}")
         popup = BisprendPopup()
         popup.show_popup()
 
     # create user file after registration (or when the "ok"/"confirm" button is pressed/released)
-    def createUserFile(self):
-        userFile = open("userfile.txt", "w")
-        userFile.write(self.player.text + "\n0")
-        self.newPlayer.registername(self.player.text)
-        userFile.close()
+    # def createUserFile(self):     /this should be a user method not an engine method
+    #     userFile = open("userfile.txt", "w")
+    #     userFile.write(self.player.text + "\n0")
+    #     self.newPlayer.registername(self.player.text)
+    #     userFile.close()
 
 
 class BisprendPopup(FloatLayout):
