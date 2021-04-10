@@ -10,10 +10,12 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 
-import xml.etree.ElementTree as ET 
+from kivy.uix.screenmanager import ScreenManager, Screen
+import xml.etree.ElementTree as ET
 
 Config.set('graphics', 'resizable', True)
 
+#user dictionary
 class User:
     def __init__(self):
         self.__name = ""
@@ -71,40 +73,27 @@ class User:
         toET.write("items.xml")
         print("wrote in items.xml")
 
-class BisprendEngine(Widget):
-    #//should be called on the welcome page
-    # def checkProgress(self):
-    #     if newPlayer.hasUser():
-    #         #do something
-    #         pass
-    newPlayer = User()
-    # called when the button is pressed/released
-    def btn(self):
-        self.newPlayer.createUserFile(self.player.text)
-        print(f"Name: {self.newPlayer.getName()} \nProgress: {self.newPlayer.getProgress()}")
-        popup = BisprendPopup()
-        popup.show_popup()
+#Screens
+class WindowManager(ScreenManager):
+    pass
 
-    # create user file after registration (or when the "ok"/"confirm" button is pressed/released)
-    # def createUserFile(self):     /this should be a user method not an engine method
-    #     userFile = open("userfile.txt", "w")
-    #     userFile.write(self.player.text + "\n0")
-    #     self.newPlayer.registername(self.player.text)
-    #     userFile.close()
+class RegWindow(Screen):
+    def checkProgress(self):
+        pass
 
+    player = User()
+    def registerUser(self):
+        self.player.createUserFile(self.username.text)
+        print(f"Name: {self.player.getName()} \nProgress: {self.player.getProgress()}")
 
-class BisprendPopup(FloatLayout):
-    def show_popup(self):
-        show = BisprendPopup()
-        popupWindow = Popup(title="", content=show,
-                            size_hint=(None, None), size=(200, 100))
-        popupWindow.open()
+class WelcomeWindow(Screen):
+    pass
 
+KV = Builder.load_file("bisprend.kv")
 
 class BisprendApp(App):
     def build(self):
-        engine = BisprendEngine()
-        return engine
+        return KV
 
 
 #Registering Font
