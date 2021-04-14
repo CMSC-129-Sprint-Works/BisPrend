@@ -1,104 +1,66 @@
+from kivymd.app import MDApp
 
-from kivy.app import App
 from kivy.lang import Builder
-from kivy.uix.widget import Widget
 from kivy.core.text import LabelBase
-
+#from kivy.properties import ObjectProperty
 from kivy.config import Config
-from kivy.uix.button import Button
-from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.popup import Popup
-from kivy.uix.label import Label
 
+#kivy uix
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen
-import xml.etree.ElementTree as ET
+
+#kivymd
+from kivymd.uix.label import MDLabel
+from kivymd.uix.floatlayout import MDFloatLayout
+from kivymd.uix.card import MDCard
+
+from kivy.clock import Clock
+from user import User
+
 
 Config.set('graphics', 'resizable', True)
 
-#user dictionary
-class User:
-    def __init__(self):
-        self.__name = ""
-        self.__progress = 0
-        self.__nouser = True
-        self.checkFile()
-
-    def registername(self, newname:str):
-        self.__name = newname
-
-    def updateuserprogress(self, newprog:int):
-        self.__progress = newprog
-
-    def getName(self):
-        return self.__name 
-
-    def getProgress(self):
-        return self.__progress
-
-    def hasUser(self):
-        return self.__nouser
-    
-    def checkFile(self):
-        try:
-            tree = ET.parse("items.xml")
-            root = tree.getroot()
-
-            for elem in root:
-                subelem = elem.findall("datum")
-                self.__name = subelem[0].text
-                self.__progress = subelem[1].text
-
-            self.__nouser = False
-
-        except FileNotFoundError:
-            self.__nouser = True
-        except ET.ParseError:
-            self.__nouser = True
-    
-    def createUserFile(self,name:str):
-        self.__name = name
-        self.__progress = 0
-        self.__nouser = False
-        data = ET.Element("data")
-        item = ET.SubElement(data,"items")
-        log1 = ET.SubElement(item,"datum")
-        log2 = ET.SubElement(item,"datum")
-        log1.set("name","name")
-        log2.set("name","progress")
-        log1.text = name
-        log2.text = "0"
-
-        toET = ET.ElementTree()
-        toET._setroot(data)
-        toET.write("items.xml")
-        print("wrote in items.xml")
+newPlayer = User() #global scope (for testing)
 
 #Screens
-class WindowManager(ScreenManager):
+class PageManager(ScreenManager):
     pass
 
-class RegWindow(Screen):
-    def checkProgress(self):
-        pass
+class RegPage(Screen):
+    def on_enter(self):
+        Clock.schedule_once(self.skip)
 
-    player = User()
     def registerUser(self):
-        self.player.createUserFile(self.username.text)
-        print(f"Name: {self.player.getName()} \nProgress: {self.player.getProgress()}")
+        newPlayer.createUserFile(self.username.text)
+        print(f"Name: {newPlayer.getName()} \nProgress: {newPlayer.getProgress()}")
 
-class WelcomeWindow(Screen):
+    def skip(self,dt):
+        if(not newPlayer.hasUser()):
+            self.manager.current = 'Welcome'
+  
+class WelcomePage(Screen):
     pass
 
-KV = Builder.load_file("bisprend.kv")
+class BalayPage(Screen):
+    pass
 
-class BisprendApp(App):
+class MenuSelector(Screen):
+    pass
+
+class BisprendApp(MDApp):
     def build(self):
-        return KV
+        self.theme_cls.primary_palette= "Blue"
+        self.theme_cls.primary_hue= "A700"
+        self.theme_cls.accent_palette = "LightGreen"
+        self.theme_cls.accent_hue = "A700"
+        self.root = Builder.load_file("bisprend.kv")
 
 
 #Registering Font
 LabelBase.register(name="Mont",
-    fn_regular= "Mont-HeavyDEMO.otf"
+    fn_regular= "Mont-ExtraLightDemo.otf", 
+    fn_bold = "Mont-HeavyDEMO.otf"
 )
 
 if __name__ == '__main__':
