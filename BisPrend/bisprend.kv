@@ -3,7 +3,6 @@
 
 PageManager:
     RegPage:
-    WelcomePage:
     BalayPage:
     MenuSelector:
 
@@ -53,35 +52,6 @@ PageManager:
             pos_hint: {'center_y': 0.35, 'center_x': 0.5}
             on_release:
                 root.registerUser()
-                app.root.current = "Welcome"
-                root.manager.transition.direction = "left"
-                
-<WelcomePage>:
-    name: "Welcome"
-    FloatLayout:
-        canvas:
-            Rectangle:
-                size: root.width, root.height
-                source: "default-bg.png"
-
-        Label:
-            text: "Welcome!" 
-            font_name: "Mont"
-            font_size: 40
-            pos_hint: {'center_y': 0.5, 'center_x': 0.5}
-            #center_x: root.width / 2
-            #top: root.top - 20
-            color: 0.12,0.12,0.12
-
-        Button:
-            text: "Next (Sunod)"
-            background_color: 0,0,0
-            color: 1,1,1
-            font_size: 20
-            font_name: "Mont"
-            size_hint: (0.2,0.1)
-            pos_hint: {'center_y': 0.35, 'center_x': 0.5}
-            on_release: 
                 app.root.current = "Selector"
                 root.manager.transition.direction = "left"
 
@@ -94,7 +64,7 @@ PageManager:
                 source: "default-bg.png"
 
         Label:
-            text: "Menu" 
+            text: "Welcome, " + root.playername()
             font_name: "Mont"
             font_size: 40
             pos_hint: {'center_y': 0.85, 'center_x': 0.5}
@@ -108,7 +78,7 @@ PageManager:
             color: 1,1,1
             font_size: 20
             font_name: "Mont"
-            size_hint: (0.2,0.1)
+            size_hint: (0.45,0.1)
             pos_hint: {'center_y': 0.65, 'center_x': 0.5}
             on_release: 
                 app.root.current = "Balay"
@@ -120,8 +90,8 @@ PageManager:
             color: 1,1,1
             font_size: 20
             font_name: "Mont"
-            size_hint: (0.2,0.1)
-            pos_hint: {'center_y': 0.55, 'center_x': 0.5}
+            size_hint: (0.45,0.1)
+            pos_hint: {'center_y': 0.50, 'center_x': 0.5}
             on_release: 
                 # app.root.current = "Balay"
                 # root.manager.transition.direction = "left"
@@ -132,20 +102,11 @@ PageManager:
             color: 1,1,1
             font_size: 20
             font_name: "Mont"
-            size_hint: (0.2,0.1)
-            pos_hint: {'center_y': 0.45, 'center_x': 0.5}
+            size_hint: (0.45,0.1)
+            pos_hint: {'center_y': 0.35, 'center_x': 0.5}
             on_release: 
                 # app.root.current = "Balay"
                 # root.manager.transition.direction = "left"
-        Button:
-            text: "Back"
-            background_color: 0,0,0
-            color: 1,1,1
-            size_hint: (0.1,0.05)
-            pos_hint: {'y':0.90,'x':0.075}
-            on_release: 
-                app.root.current = "Welcome"
-                root.manager.transition.direction = "right"
 
 <BalayPage>:
     name: "Balay"

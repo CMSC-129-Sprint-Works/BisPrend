@@ -28,6 +28,7 @@ class PageManager(ScreenManager):
     pass
 
 class RegPage(Screen):
+    
     def on_enter(self):
         Clock.schedule_once(self.skip)
 
@@ -37,15 +38,14 @@ class RegPage(Screen):
 
     def skip(self,dt):
         if(not newPlayer.hasUser()):
-            self.manager.current = 'Welcome'
+            self.manager.current = 'Selector'
   
-class WelcomePage(Screen):
-    pass
-
 class BalayPage(Screen):
     pass
 
 class MenuSelector(Screen):
+    def playername(self):
+        return newPlayer.getName()
     pass
 
 class BisprendApp(MDApp):
