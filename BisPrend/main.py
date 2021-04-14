@@ -89,12 +89,15 @@ class RegWindow(Screen):
 class WelcomeWindow(Screen):
     pass
 
+class MenuWindow(Screen):
+    player_name = RegWindow.player.getName()
+    pass
+
 KV = Builder.load_file("bisprend.kv")
 
 class BisprendApp(App):
     def build(self):
         return KV
-
 
 #Registering Font
 LabelBase.register(name="Mont",

@@ -3,6 +3,7 @@
 WindowManager:
     RegWindow:
     WelcomeWindow:
+    MenuWindow:
 
 <RegWindow>:
     name: "Reg"
@@ -43,7 +44,7 @@ WindowManager:
             pos_hint: {'center_y': 0.35, 'center_x': 0.5}
             on_release:
                 root.registerUser()
-                app.root.current = "Welcome"
+                app.root.current = "Menu"
                 root.manager.transition.direction = "left"
                 
 <WelcomeWindow>:
@@ -62,3 +63,50 @@ WindowManager:
             #center_x: root.width / 2
             #top: root.top - 20
             color: 0.12,0.12,0.12
+
+<MenuWindow>:
+    name: "Menu"
+    FloatLayout:
+        orientation: 'vertical'
+        canvas:
+            Rectangle:
+                size: root.width, root.height
+                source: "default-bg.png"
+
+        Label:
+            text: "Welcome," 
+            font_name: "Mont"
+            font_size: 80
+            pos_hint: {'center_y': 0.75, 'center_x': 0.5}
+            color: 0.12,0.12,0.12
+        
+        Label:
+            text: root.player_name
+            font_name: "Mont"
+            font_size: 70
+            pos_hint: {'center_y': 0.65, 'center_x': 0.5}
+            color: 0.12,0.12,0.12
+        
+        Button:
+            text: "Balay"
+            background_color: 0,0,0
+            color: 1,1,1
+            font_size: 30
+            font_name: "Mont"
+            size_hint: (0.5,0.1)
+            pos_hint: {'center_y': 0.4, 'center_x': 0.5}
+            on_release:
+                app.root.current = "Menu"
+                root.manager.transition.direction = "left"
+
+        Button:
+            text: "Skwelahan"
+            background_color: 0,0,0
+            color: 1,1,1
+            font_size: 30
+            font_name: "Mont"
+            size_hint: (0.5,0.1)
+            pos_hint: {'center_y': 0.2, 'center_x': 0.5}
+            on_release:
+                app.root.current = "Menu"
+                root.manager.transition.direction = "left"
