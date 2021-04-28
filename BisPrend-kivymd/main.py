@@ -15,20 +15,40 @@ from kivymd.uix.label import MDLabel
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.card import MDCard
 
+from kivy.clock import Clock
+from user import User
+
 
 Config.set('graphics', 'resizable', True)
+
+newPlayer = User() #global scope (for testing)
 
 #Screens
 class PageManager(ScreenManager):
     pass
 
 class RegPage(Screen):
-    pass
+    
+    def on_enter(self):
+        Clock.schedule_once(self.skip)
+
+    def registerUser(self):
+        newPlayer.createUserFile(self.username.text)
+        print(f"Name: {newPlayer.getName()} \nProgress: {newPlayer.getProgress()}")
+
+    def skip(self,dt):
+        if(not newPlayer.hasUser()):
+            self.manager.current = 'Selector'
   
-class WelcomePage(Screen):
+class BalayPage(Screen):
     pass
 
-class BalayPage(Screen):
+class SkuylahanPage(Screen):
+    pass
+
+class MenuSelector(Screen):
+    def playername(self):
+        return newPlayer.getName()
     pass
 
 class BisprendApp(MDApp):
