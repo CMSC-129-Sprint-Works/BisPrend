@@ -1,47 +1,203 @@
 #:kivy 2.0.0
+#: import MDIconButton kivymd.uix.button.MDRectangleFlatButton
 
-<BisprendEngine>:
-    player: username
+PageManager:
+    RegPage:
+    BalayPage:
+    MenuSelector:
+
+<RegPage>:
+    name: "Reg"
+
+    username: username #object
+    
     FloatLayout:
         orientation: 'vertical'
+        
         canvas:
             Rectangle:
-                size: root.width, root.height
-                source: 'bg-1.png'
-
+                pos: self.pos
+                size: self.size
+                source: "bg-1.png"
+                
         Label:
-            font_size: 85
-            font_name: "Mont"
-            center_x: root.width / 2
-            top: root.top - 20
             text: "Pangalan"
+            font_size: 100
+            font_name: "Mont"
+            bold: True
+            color: 0.4,0.4,0.4
+            pos_hint: {'center_y': 0.75, 'center_x': 0.5}
             color: 0.12,0.12,0.12
 
         TextInput:
+            text: "Name"
             multiline: False
+            focus: False
             id: username
             font_size: 30
             font_name: "Mont"
-            size_hint: (4.5,0.5)
-            center_x: root.width / 2
-            top: root.top - 150
+            size_hint: (0.4, 0.15)
+            pos_hint: {'center_y': 0.55, 'center_x': 0.5}
 
 
-        Button:
-            background_color: 0,0,0
-            text: "Confirm"
-            color: 1,1,1
+        MDRectangleFlatButton:
+            text: "Ok"
+            md_bg_color: [0, 0, 0, 0.95] #1,0.8,0.4,0.9 <- original color
+            theme_text_color: 'Custom'
+            text_color: [1,1,1,1]
             font_size: 30
             font_name: "Mont"
-            size_hint: (4.5,0.5)
-            center_x: root.width / 2
-            top: root.top - 210
-            text: "Ok"
-            color: 1,1,1
-            on_release: root.btn()
+            font_bold: True
+            size_hint: (0.2,0.1)
+            pos_hint: {'center_y': 0.35, 'center_x': 0.5}
+            on_release:
+                root.registerUser()
+                app.root.current = "Selector"
+                root.manager.transition.direction = "left"
 
-<BisprendPopup>:
-    Label:
-        text: "Welcome!"
-        size_hint: 0.6, 0.8
-        pos_hint: {"x": 0.2, "top": 1}
+<MenuSelector>:
+    name: "Selector"
+    FloatLayout:
+        canvas:
+            Rectangle:
+                size: root.width, root.height
+                source: "default-bg.png"
+
+        Label:
+            text: "Welcome, " + root.playername()
+            font_name: "Mont"
+            font_size: 40
+            pos_hint: {'center_y': 0.85, 'center_x': 0.5}
+            #center_x: root.width / 2
+            #top: root.top - 20
+            color: 0.12,0.12,0.12
+
+        Button:
+            text: "Balay (Home)"
+            background_color: 0,0,0
+            color: 1,1,1
+            font_size: 20
+            font_name: "Mont"
+            size_hint: (0.45,0.1)
+            pos_hint: {'center_y': 0.65, 'center_x': 0.5}
+            on_release: 
+                app.root.current = "Balay"
+                root.manager.transition.direction = "left"
+
+        Button:
+            text: "Skwelahan (School)"
+            background_color: 0,0,0
+            color: 1,1,1
+            font_size: 20
+            font_name: "Mont"
+            size_hint: (0.45,0.1)
+            pos_hint: {'center_y': 0.50, 'center_x': 0.5}
+            on_release: 
+                # app.root.current = "Balay"
+                # root.manager.transition.direction = "left"
+
+        Button:
+            text: "Tindahan (Store)"
+            background_color: 0,0,0
+            color: 1,1,1
+            font_size: 20
+            font_name: "Mont"
+            size_hint: (0.45,0.1)
+            pos_hint: {'center_y': 0.35, 'center_x': 0.5}
+            on_release: 
+                # app.root.current = "Balay"
+                # root.manager.transition.direction = "left"
+
+<BalayPage>:
+    name: "Balay"
+    Carousel:
+        direction: "right"
+        canvas:
+            Rectangle:
+                size: root.width, root.height
+                source: "default-bg.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "balay/pamilya.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "balay/mama.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "balay/papa.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "balay/igsoon.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "balay/ate.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "balay/kuya.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "balay/manghud.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "balay/sala.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "balay/kusina.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "balay/kan-anan.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "balay/buntag.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "balay/udto.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "balay/hapon.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "balay/gabii.png"
+                
+    FloatLayout:
+        Button:
+            text: "Back"
+            background_color: 0,0,0
+            color: 1,1,1
+            size_hint: (0.1,0.05)
+            pos_hint: {'y':0.90,'x':0.075}
+            on_release: 
+                app.root.current = "Selector"
+                root.manager.transition.direction = "right"
+
+
+
+

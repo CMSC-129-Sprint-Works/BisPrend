@@ -1,8 +1,14 @@
+import time
+import threading
+import threading
+
+
 from kivymd.app import MDApp
 
 from kivy.lang import Builder
 from kivy.core.text import LabelBase
-#from kivy.properties import ObjectProperty
+from kivy.core.audio import SoundLoader
+from kivy.properties import ObjectProperty
 from kivy.config import Config
 
 #kivy uix
@@ -14,10 +20,10 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivymd.uix.label import MDLabel
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.card import MDCard
+from kivymd.uix.textfield import MDTextField
 
 from kivy.clock import Clock
 from user import User
-
 
 Config.set('graphics', 'resizable', True)
 
@@ -43,6 +49,20 @@ class RegPage(Screen):
 class BalayPage(Screen):
     pass
 
+class BalayQuizPage(Screen):
+    answerlist = []
+    def getAnswer(self,answer):
+        print(answer)
+        self.appendAnswers(answer)
+    def appendAnswers(self, ans):
+        self.answerlist.append(ans)
+        print("Inside appendAnswer")
+        for i in self.answerlist:
+            print(i)
+    #def checkanswer with the database
+    pass
+
+
 class SkuylahanPage(Screen):
     pass
 
@@ -58,6 +78,7 @@ class BisprendApp(MDApp):
         self.theme_cls.accent_palette = "LightGreen"
         self.theme_cls.accent_hue = "A700"
         self.root = Builder.load_file("bisprend.kv")
+
 
 
 #Registering Font

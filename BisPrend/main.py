@@ -1,74 +1,66 @@
+from kivymd.app import MDApp
 
-from kivy.app import App
 from kivy.lang import Builder
-from kivy.uix.widget import Widget
 from kivy.core.text import LabelBase
-
+#from kivy.properties import ObjectProperty
 from kivy.config import Config
-from kivy.uix.button import Button
+
+#kivy uix
 from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.popup import Popup
 from kivy.uix.label import Label
+from kivy.uix.screenmanager import ScreenManager, Screen
+
+#kivymd
+from kivymd.uix.label import MDLabel
+from kivymd.uix.floatlayout import MDFloatLayout
+from kivymd.uix.card import MDCard
+
+from kivy.clock import Clock
+from user import User
 
 
 Config.set('graphics', 'resizable', True)
 
-class User:
-    def __init__(self):
-        self.__name = ""
-        self.__progress = 0
+newPlayer = User() #global scope (for testing)
 
-    def registername(self, newname):
-        self.__name = newname
+#Screens
+class PageManager(ScreenManager):
+    pass
 
-    def updateuserprogress(self, newprog:int):
-        self.__progress = newprog
+class RegPage(Screen):
+    
+    def on_enter(self):
+        Clock.schedule_once(self.skip)
 
-    def getName(self):
-        return self.__name 
-        #im assuming this is for the file saving -kiev
+    def registerUser(self):
+        newPlayer.createUserFile(self.username.text)
+        print(f"Name: {newPlayer.getName()} \nProgress: {newPlayer.getProgress()}")
 
-    def getProgress(self):
-        return self.__progress
+    def skip(self,dt):
+        if(not newPlayer.hasUser()):
+            self.manager.current = 'Selector'
+  
+class BalayPage(Screen):
+    pass
 
+class MenuSelector(Screen):
+    def playername(self):
+        return newPlayer.getName()
+    pass
 
-class BisprendEngine(Widget):
-    newPlayer = User()
-    def checkProgress(self):
-        pass
-
-    # called when the button is pressed/released
-    def btn(self):
-        self.createUserFile()
-        print(f"Name: {self.newPlayer.getName()} \nProgress: {self.newPlayer.getProgress()}")
-        popup = BisprendPopup()
-        popup.show_popup()
-
-    # create user file after registration (or when the "ok"/"confirm" button is pressed/released)
-    def createUserFile(self):
-        userFile = open("userfile.txt", "w")
-        userFile.write(self.player.text + "\n0")
-        self.newPlayer.registername(self.player.text)
-        userFile.close()
-
-
-class BisprendPopup(FloatLayout):
-    def show_popup(self):
-        show = BisprendPopup()
-        popupWindow = Popup(title="", content=show,
-                            size_hint=(None, None), size=(200, 100))
-        popupWindow.open()
-
-
-class BisprendApp(App):
+class BisprendApp(MDApp):
     def build(self):
-        engine = BisprendEngine()
-        return engine
+        self.theme_cls.primary_palette= "Blue"
+        self.theme_cls.primary_hue= "A700"
+        self.theme_cls.accent_palette = "LightGreen"
+        self.theme_cls.accent_hue = "A700"
+        self.root = Builder.load_file("bisprend.kv")
 
 
 #Registering Font
 LabelBase.register(name="Mont",
-    fn_regular= "Mont-HeavyDEMO.otf"
+    fn_regular= "Mont-ExtraLightDemo.otf", 
+    fn_bold = "Mont-HeavyDEMO.otf"
 )
 
 if __name__ == '__main__':
