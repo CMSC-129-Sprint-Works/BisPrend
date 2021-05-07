@@ -17,6 +17,7 @@ from kivymd.uix.card import MDCard
 
 from kivy.clock import Clock
 from user import User
+import quiz
 
 
 Config.set('graphics', 'resizable', True)
@@ -41,6 +42,12 @@ class RegPage(Screen):
             self.manager.current = 'Selector'
   
 class BalayPage(Screen):
+    pass
+
+class SkuylahanPage(Screen):
+    pass
+
+class TindahanPage(Screen):
     pass
 
 class MenuSelector(Screen):

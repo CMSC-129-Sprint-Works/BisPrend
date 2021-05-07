@@ -1,43 +1,18 @@
-import xml.etree.ElementTree as ET
+from user import User
 
-try:
-    tree = ET.parse("items.xml")
-    root = tree.getroot()
-    # print(str(root))
+userInst = User()
 
-    for elem in root:
-        subelem = elem.findall("datum")
-        print(subelem[0].text)
+userInst.createUserFile("John Doe")
 
-except FileNotFoundError:
-    data = ET.Element("data")
-    item = ET.SubElement(data,"items")
-    log1 = ET.SubElement(item,"datum")
-    log2 = ET.SubElement(item,"datum")
-    log1.set("name","name")
-    log2.set("name","progress")
-    log1.text = "KievCangs"
-    log2.text = "0"
+print(userInst.getName())
+print(userInst.getProgress())
+print(userInst.hasUser())
 
-    toET = ET.ElementTree()
-    toET._setroot(data)
-    toET.write("items.xml")
-    # pass
-except ET.ParseError:
-    data = ET.Element("data")
-    item = ET.SubElement(data,"items")
-    log1 = ET.SubElement(item,"datum")
-    log2 = ET.SubElement(item,"datum")
-    log1.set("name","name")
-    log2.set("name","progress")
-    log1.text = "KievCangs"
-    log2.text = "0"
+userInst.registername("Mark")
+userInst.updateuserprogress(5)
 
-    toET = ET.ElementTree()
-    toET._setroot(data)
-    toET.write("items.xml")
+userInst2 = User()
 
-
-print("end of run")
-
-
+print(userInst.getName())
+print(userInst.getProgress())
+print(userInst.hasUser())

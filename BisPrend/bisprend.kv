@@ -4,7 +4,10 @@
 PageManager:
     RegPage:
     BalayPage:
+    SkuylahanPage:
+    TindahanPage:
     MenuSelector:
+    BalayQuiz:
 
 <RegPage>:
     name: "Reg"
@@ -42,9 +45,9 @@ PageManager:
 
         MDRectangleFlatButton:
             text: "Ok"
-            md_bg_color: [0, 0, 0, 0.95] #1,0.8,0.4,0.9 <- original color
+            md_bg_color: [1,0.8,0.4,1]
             theme_text_color: 'Custom'
-            text_color: [1,1,1,1]
+            text_color: [0,0,0,1]
             font_size: 30
             font_name: "Mont"
             font_bold: True
@@ -72,10 +75,11 @@ PageManager:
             #top: root.top - 20
             color: 0.12,0.12,0.12
 
-        Button:
+        MDRectangleFlatButton:
             text: "Balay (Home)"
-            background_color: 0,0,0
-            color: 1,1,1
+            md_bg_color: [1,0.8,0.4,1]
+            theme_text_color: 'Custom'
+            text_color: [0,0,0,1]
             font_size: 20
             font_name: "Mont"
             size_hint: (0.45,0.1)
@@ -84,29 +88,31 @@ PageManager:
                 app.root.current = "Balay"
                 root.manager.transition.direction = "left"
 
-        Button:
+        MDRectangleFlatButton:
             text: "Skwelahan (School)"
-            background_color: 0,0,0
-            color: 1,1,1
+            md_bg_color: [1,0.8,0.4,1]
+            theme_text_color: 'Custom'
+            text_color: [0,0,0,1]
             font_size: 20
             font_name: "Mont"
             size_hint: (0.45,0.1)
             pos_hint: {'center_y': 0.50, 'center_x': 0.5}
             on_release: 
-                # app.root.current = "Balay"
-                # root.manager.transition.direction = "left"
+                app.root.current = "Skuylahan"
+                root.manager.transition.direction = "left"
 
-        Button:
+        MDRectangleFlatButton:
             text: "Tindahan (Store)"
-            background_color: 0,0,0
-            color: 1,1,1
+            md_bg_color: [1,0.8,0.4,1]
+            theme_text_color: 'Custom'
+            text_color: [0,0,0,1]
             font_size: 20
             font_name: "Mont"
             size_hint: (0.45,0.1)
             pos_hint: {'center_y': 0.35, 'center_x': 0.5}
             on_release: 
-                # app.root.current = "Balay"
-                # root.manager.transition.direction = "left"
+                app.root.current = "Tindahan"
+                root.manager.transition.direction = "left"
 
 <BalayPage>:
     name: "Balay"
@@ -188,16 +194,204 @@ PageManager:
                 source: "balay/gabii.png"
                 
     FloatLayout:
-        Button:
-            text: "Back"
-            background_color: 0,0,0
-            color: 1,1,1
+        MDRectangleFlatButton:
+            text: "Menu"
+            md_bg_color: [1,0.8,0.4,1]
+            theme_text_color: 'Custom'
+            text_color: [0,0,0,1]
+            font_name: "Mont"
             size_hint: (0.1,0.05)
             pos_hint: {'y':0.90,'x':0.075}
             on_release: 
                 app.root.current = "Selector"
                 root.manager.transition.direction = "right"
 
+<SkuylahanPage>:
+    name: "Skuylahan"
+    Carousel:
+        direction: "right"
+        canvas:
+            Rectangle:
+                size: root.width, root.height
+                source: "default-bg.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "skuylahan/studyante.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "skuylahan/magtutudlo.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "skuylahan/classroom.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "skuylahan/lamesa.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "skuylahan/lingkoranan.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "skuylahan/lapis.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "skuylahan/borador.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "skuylahan/papel.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "skuylahan/kuwaderno.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "skuylahan/library.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "skuylahan/estante.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "skuylahan/libro.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "skuylahan/kapulongnan.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "skuylahan/ency.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "skuylahan/news.png"
+    FloatLayout:
+        MDRectangleFlatButton:
+            text: "Menu"
+            md_bg_color: [1,0.8,0.4,1]
+            theme_text_color: 'Custom'
+            text_color: [0,0,0,1]
+            font_name: "Mont"
+            size_hint: (0.1,0.05)
+            pos_hint: {'y':0.90,'x':0.075}
+            on_release: 
+                app.root.current = "Selector"
+                root.manager.transition.direction = "right"
 
+<TindahanPage>:
+    name: "Tindahan"
+    Carousel:
+        direction: "right"
+        canvas:
+            Rectangle:
+                size: root.width, root.height
+                source: "default-bg.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "balay/ate.png"
+        MDCard:
+            size_hint: .4, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
+            Image:
+                source: "balay/sala.png"
+        FloatLayout:
+            Label:
+                text: "Well Done!"
+                font_name: "Mont"
+                font_size: 40
+                pos_hint: {'center_y': 0.60, 'center_x': 0.50}
+                color: 0.12, 0.12, 0.12
+            MDFillRoundFlatButton:
+                text: "take quiz"
+                md_bg_color: [1,0.8,0.4,1]
+                text_color: 0.12, 0.12, 0.12
+                font_size: 20
+                font_name: "Mont"
+                # size_hint: (0.30,0.5)
+                size: (100, 100)
+                pos_hint: {'center_y': 0.45, 'center_x': 0.5}
+                on_release:
+                    app.root.current = "BalayQuiz"
+                    root.manager.transition.direction = "up"
 
+    FloatLayout:
+        MDRectangleFlatButton:
+            text: "Menu"
+            md_bg_color: [1,0.8,0.4,1]
+            theme_text_color: 'Custom'
+            text_color: [0,0,0,1]
+            font_name: "Mont"
+            size_hint: (0.1,0.05)
+            pos_hint: {'y':0.90,'x':0.075}
+            on_release: 
+                app.root.current = "Selector"
+                root.manager.transition.direction = "right"
 
+<BalayQuiz>:
+    name: "BalayQuiz"
+    on_enter: self.loadQuiz()
+    FloatLayout:
+        orienation: 'vertical'
+        size_hint: (1, 1)
+        canvas:
+            Rectangle:
+                size: root.width, root.height
+                source: "default-bg.png"
+        MDCard:
+            size_hint: .8, .4
+            pos_hint: {'center_x': .5, 'y': .5}
+            Image:
+                id: img
+                source: ""
+        Label:
+            id: img_name
+            text: ""
+            font_name: "Mont"
+            font_size: 40
+            color: .12, .12, .12
+            center_y: .5
+        MDGridLayout:
+            id: choices
+            cols: 0
+            spacing: "10dp"
+            adaptive_size: True
+            pos_hint: {'center_x': .5, 'center_y': .25}
+
+    FloatLayout:
+        MDRectangleFlatButton:
+            text: "Exit Quiz"
+            font_name: "Mont"
+            theme_text_color: 'Custom'
+            text_color: 0, 0, 0, 1
+            size: (150, 90)
+            pos_hint: {'y':0.90,'x':0.075}
+            on_release:
+                root.clearProgress()
+                app.root.current = "Selector"
+                root.manager.transition.direction = "right"
