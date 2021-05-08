@@ -1,7 +1,7 @@
 import time
 import threading
 import threading
-
+from balayQuizDatabase import *
 
 from kivymd.app import MDApp
 
@@ -51,15 +51,20 @@ class BalayPage(Screen):
 
 class BalayQuizPage(Screen):
     answerlist = []
-    def getAnswer(self,answer):
-        print(answer)
-        self.appendAnswers(answer)
     def appendAnswers(self, ans):
         self.answerlist.append(ans)
-        print("Inside appendAnswer")
-        for i in self.answerlist:
-            print(i)
-    #def checkanswer with the database
+        self.checkanswer()
+    def checkanswer(self):
+        conn = create_or_open_db('BalayQuiz.db')
+        cur = conn.cursor()
+        correct_answer = extract_answer(cur)
+        ind = self.answerlist.index(self.answerlist[-1])
+        correct = correct_answer[ind]
+        if self.answerlist[-1] == correct[0]:
+            print(self.answerlist[-1] + " Correct")
+        else:
+            print(self.answerlist[-1] + " Incorrect")
+
     pass
 
 

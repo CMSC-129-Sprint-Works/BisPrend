@@ -264,7 +264,7 @@ PageManager:
                 source: "BalayQuiz/manghud.png"
 
         MDTextField:
-            id: answer1
+            id: 0
             text: ''
             multiline: False
             focus: False
@@ -272,9 +272,9 @@ PageManager:
             pos_hint: {'center_x': 0.115, 'center_y': 0.783}
             required: True
             halign: 'center'
-            on_text: root.check(self.text)
+            on_text_validate: root.appendAnswers(self.text)
         MDTextField:
-            id: answer2
+            id: 1
             text: ''
             multiline: False
             focus: False
@@ -282,9 +282,9 @@ PageManager:
             pos_hint: {'center_x': 0.115, 'center_y': 0.615}
             required: True
             halign: 'center'
-            on_text: root.check(self.text)
+            on_text_validate: root.appendAnswers(self.text)
         MDTextField:
-            id: answer3
+            id: 2
             text: ''
             multiline: False
             focus: False
@@ -292,9 +292,9 @@ PageManager:
             pos_hint: {'center_x': 0.115, 'center_y': 0.45}
             required: True
             halign: 'center'
-            on_text: root.check(self.text)
+            on_text_validate: root.appendAnswers(self.text)
         MDTextField:
-            id: answer4
+            id: 3
             text: ''
             multiline: False
             focus: False
@@ -302,9 +302,9 @@ PageManager:
             pos_hint: {'center_x': 0.115, 'center_y': 0.283}
             required: True
             halign: 'center'
-            on_text: root.check(self.text)
+            on_text_validate: root.appendAnswers(self.text)
         MDTextField:
-            id: answer5
+            id: 4
             text: ''
             multiline: False
             focus: False
@@ -312,7 +312,7 @@ PageManager:
             pos_hint: {'center_x': 0.115, 'center_y': 0.12}
             required: True
             halign: 'center'
-            on_text: root.getAnswer(self.text)
+            on_text_validate: root.appendAnswers(self.text)
 
 
         MDLabel:
@@ -348,18 +348,23 @@ PageManager:
             pos_hint: {'center_x': 1.25, 'center_y': 0.12}
 
         MDLabel:
+            id: question1
             text: 'ate'
             pos_hint: {'center_x': 0.65, 'center_y': 0.78}
         MDLabel:
+            id: question2
             text: 'kuya'
             pos_hint: {'center_x': 0.65, 'center_y': 0.615}
         MDLabel:
+            id: question3
             text: 'papa'
             pos_hint: {'center_x': 0.65, 'center_y': 0.45}
         MDLabel:
+            id: question4
             text: 'manghud'
             pos_hint: {'center_x': 0.65, 'center_y': 0.285}
         MDLabel:
+            id: question5
             text: 'mama'
             pos_hint: {'center_x': 0.65, 'center_y': 0.12}
     FloatLayout:
