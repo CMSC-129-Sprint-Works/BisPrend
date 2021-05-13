@@ -26,7 +26,14 @@ newPlayer = User() #global scope (for testing)
 
 #Screens
 class PageManager(ScreenManager):
-    pass
+    category_tracker = [] #tracks which category-subcategory the user is in
+    def updateTracker(self, category):
+        '''
+        Adds a category to the category tracker if it's not yet added
+        '''
+        if category not in self.category_tracker:
+            self.category_tracker.append(category)
+        print("Tracker: " + str(self.category_tracker))
 
 class RegPage(Screen):
     
@@ -40,20 +47,68 @@ class RegPage(Screen):
     def skip(self,dt):
         if(not newPlayer.hasUser()):
             self.manager.current = 'Selector'
-  
-class BalayPage(Screen):
-    pass
-
-class SkuylahanPage(Screen):
-    pass
-
-class TindahanPage(Screen):
-    pass
 
 class MenuSelector(Screen):
+    def on_enter(self):
+        self.manager.category_tracker = [] #reset the tracker to empty
+        print("Tracker: " + str(self.manager.category_tracker))
+
     def playername(self):
         return newPlayer.getName()
-    pass
+
+# class BalayPage(Screen):
+#     def on_enter(self):
+#         self.manager.updateTracker(self.name)
+# class PamilyaPage(Screen):
+#     def on_enter(self):
+#         self.manager.updateTracker(self.name)
+# class ResibidorPage (Screen):
+#     def on_enter(self):
+#         self.manager.updateTracker(self.name)
+# class KomidorPage(Screen):
+#     def on_enter(self):
+#         self.manager.updateTracker(self.name)
+# class Kan_ananPage(Screen):
+#     def on_enter(self):
+#         self.manager.updateTracker(self.name)
+# class KatulgananPage(Screen):
+#     def on_enter(self):
+#         self.manager.updateTracker(self.name)
+# class KasilyasPage(Screen):
+#     def on_enter(self):
+#         self.manager.updateTracker(self.name)
+
+# class SkuylahanPage(Screen):
+#     def on_enter(self):
+#         self.manager.updateTracker(self.name)
+# class ClassroomPage(Screen):
+#     def on_enter(self):
+#         self.manager.updateTracker(self.name)
+# class NumeroPage(Screen):
+#     def on_enter(self):
+#         self.manager.updateTracker(self.name)
+# class ClinicPage(Screen):
+#     def on_enter(self):
+#         self.manager.updateTracker(self.name)
+# class LibPage(Screen):
+#     def on_enter(self):
+#         self.manager.updateTracker(self.name)
+# class CanteenPage(Screen):
+#     def on_enter(self):
+#         self.manager.updateTracker(self.name)
+
+class TindahanPage(Screen):
+    def on_enter(self):
+        self.manager.updateTracker(self.name)
+class PagkaonPage(Screen):
+    def on_enter(self):
+        self.manager.updateTracker(self.name)
+class SaninaPage(Screen):
+    def on_enter(self):
+        self.manager.updateTracker(self.name)
+class KwartaPage(Screen):
+    def on_enter(self):
+        self.manager.updateTracker(self.name)
 
 class BisprendApp(MDApp):
     def build(self):
@@ -65,8 +120,8 @@ class BisprendApp(MDApp):
 
 #Registering Font
 LabelBase.register(name="Mont",
-    fn_regular= "Mont-ExtraLightDemo.otf", 
-    fn_bold = "Mont-HeavyDEMO.otf"
+    fn_regular= "font/Mont-ExtraLightDemo.otf", 
+    fn_bold = "font/Mont-HeavyDEMO.otf"
 )
 
 if __name__ == '__main__':

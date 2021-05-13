@@ -1,0 +1,188 @@
+# : import RiseInTransition kivy.uix.screenmanager.RiseInTransition
+
+<QuizPortal@FloatLayout>
+    Label:
+        text: "Well Done!"
+        font_name: "Mont"
+        font_size: 40
+        pos_hint: {'center_y': 0.60, 'center_x': 0.50}
+        color: 0.12, 0.12, 0.12
+    MDFillRoundFlatButton:
+        text: "take quiz"
+        md_bg_color: [1,0.8,0.4,1]
+        text_color: 0.12, 0.12, 0.12
+        font_size: 20
+        font_name: "Mont"
+        # size_hint: (0.30,0.5)
+        size: (100, 100)
+        pos_hint: {'center_y': 0.45, 'center_x': 0.5}
+        on_release:
+            app.root.current = "quiz"
+            app.root.transition.direction = "up"
+
+<PauseBtn>
+    MDRectangleFlatButton:
+        text: "Pause"
+        font_name: "Mont"
+        theme_text_color: 'Custom'
+        text_color: 0, 0, 0, 1
+        size: (150, 90)
+        pos_hint: {'y':0.90,'x':0.075}
+        on_release:
+            root.parent.ids.quiz_sm.current = "options" #for testing
+            root.parent.ids.quiz_sm.transition.direction = "right"
+<CheckAnswerBtn>
+    MDTextButton:
+        text: 'Check Answer'
+        pos_hint: {"center_x": .5, "center_y": .1}
+        on_release:
+            # root.parent.manager.current = "check-result"
+            root.showResult()
+
+<QuizPage>:
+    name: "quiz-manager"
+    FloatLayout:
+        id: content
+        orientation: 'vertical'
+        size_hint: (1, 1)
+        bg: ""
+        canvas:
+            Rectangle:
+                size: root.width, root.height
+                source: self.bg
+        ScreenManager:
+            id: quiz_sm
+            Options:
+            MultipleChoice:
+            TrueOrFalse:
+            CheckResult:
+            FinalResult:
+
+<Options>:
+    name: "options"
+    FloatLayout:
+        orientation: 'vertical'
+        MDRectangleFlatButton:
+            text: 'Start Quiz'
+            size_hint: 0.5, 0.15
+            pos_hint: {'center_x': .5, 'top': .8}
+            on_release:
+                root.manager.parent.parent.loadQuiz()
+        MDRectangleFlatButton:
+            text: 'Instructions'
+            size_hint: 0.5, 0.15
+            pos_hint: {'center_x': .5, 'top': .6}
+        MDRectangleFlatButton:
+            text: 'Exit Quiz'
+            size_hint: 0.5, 0.15
+            pos_hint: {'center_x': .5, 'top': .4}
+            on_release:
+                root.manager.parent.parent.manager.current = "menu"
+                root.manager.parent.parent.manager.transition.direction = 'right'
+
+<MultipleChoice>:
+    name: "multiple-choice"
+    FloatLayout:
+        orientation: 'vertical'
+        Image:
+            id: img_entry
+            source: ''
+            size_hint: .5, .3
+            pos_hint: {'center_x': .5, 'y': .5}
+        MDGridLayout:
+            id: choices
+            cols: 1
+            # orientation: 'vertical'
+            spacing: '5dp'
+            adaptive_size: True
+            pos_hint: {"center_x": .3, "center_y": .3}
+
+<TrueOrFalse>
+    name: "true-or-false"
+
+<CheckResult>
+    name: "check-result"
+    FloatLayout:
+        Label:
+            id: result
+            text: 'RESULT'
+            font_name: 'Mont'
+            font_size: 40
+            color: (0,0,0,1)
+            pos_hint: {"center_x": .5, "center_y": .6}
+        Label:
+            id: score
+            text: 'Score: '
+            font_name: 'Mont'
+            font_size: 20
+            color: (0,0,0,1)
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+<FinalResult>
+    name: "final-result"
+    FloatLayout:
+        # size: 1,1
+        Label:
+            text: 'Congratulations!'
+            font_name: 'Mont'
+            font_size: 40
+            color: (0,0,0,1)
+            pos_hint: {"center_x": .5, "center_y": .6}
+        Label:
+            text: 'You finished the quiz.'
+            font_name: 'Mont'
+            font_size: 20
+            color: (0,0,0,1)
+            pos_hint: {"center_x": .5, "center_y": .5}
+        MDRectangleFlatButton:
+            text: 'Back to Menu'
+            pos_hint: {"center_x": .5, "center_y": .4}
+            on_release:
+                root.manager.parent.parent.manager.transition.direction = "right"
+                root.manager.parent.parent.manager.current = "menu" #for testing
+
+
+
+# <QuizPage>:
+#     name: "Quiz"
+#     FloatLayout:
+#         id: content
+#         orientation: 'vertical'
+#         size_hint: (1, 1)
+#         bg: ""
+#         canvas:
+#             Rectangle:
+#                 size: root.width, root.height
+#                 source: self.bg
+#         MDCard:
+#             size_hint: .8, .4
+#             pos_hint: {'center_x': .5, 'y': .5}
+#             Image:
+#                 id: img_entry
+#                 source: ""
+#         Label:
+#             id: entry_name
+#             text: ""
+#             font_name: "Mont"
+#             font_size: 40
+#             color: .12, .12, .12
+#             center_y: .5
+#         MDGridLayout:
+#             id: choices
+#             cols: 0
+#             spacing: "10dp"
+#             adaptive_size: True
+#             pos_hint: {'center_x': .5, 'center_y': .25}
+
+#     FloatLayout:
+#         MDRectangleFlatButton:
+#             text: "Back"
+#             font_name: "Mont"
+#             theme_text_color: 'Custom'
+#             text_color: 0, 0, 0, 1
+#             size: (150, 90)
+#             pos_hint: {'y':0.90,'x':0.075}
+#             on_release:
+#                 root.clearProgress()
+#                 root.manager.current = root.manager.category_tracker[-1]
+#                 root.manager.transition.direction = "right"
