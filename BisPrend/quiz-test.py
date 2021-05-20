@@ -9,12 +9,12 @@ from quiz import QuizPage, MultipleChoice
 Builder.load_file('quiz.kv')
 Builder.load_string("""
 <Portal>
-    name: 'menu'
+    name: 'portal'
     BoxLayout:
         Button:
             text: 'Quiz Portal'
-            on_press:
-                root.manager.current = 'quiz-manager'
+            on_release:
+                root.manager.current = 'quiz'
                 root.manager.transition.direction = 'left'
 """)
 
@@ -25,7 +25,7 @@ class ScrnMngr(ScreenManager):
 class Portal(Screen):
     pass
 
-class TestApp(MDApp):
+class QuizTestApp(MDApp):
     def build(self):
         # Create the screen manager
         sm = ScrnMngr()
@@ -41,4 +41,4 @@ LabelBase.register(name="Mont",
 )
 
 if __name__ == '__main__':
-    TestApp().run()
+    QuizTestApp().run()

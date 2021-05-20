@@ -1,34 +1,53 @@
-import sqlite3
 import random
+import sqlite3
 import time
 
-from kivy.uix.screenmanager import Screen
-from kivy.uix.floatlayout import FloatLayout
-from kivymd.uix.button import MDRectangleFlatButton, MDTextButton
-# from kivymd.uix.dialog import MDDialog
+from kivy.clock import Clock
 from kivy.graphics import *
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.button import Button
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.label import Label
+from kivy.uix.relativelayout import RelativeLayout
+from kivy.uix.screenmanager import Screen
+from kivy.uix.togglebutton import ToggleButton
+from kivymd.uix.button import MDRectangleFlatButton, MDTextButton
+from kivymd.uix.dialog import MDDialog
+# from kivymd.uix.behaviors.toggle_behavior import MDToggleButton
 
 class QuizPage(Screen):
     score = 0
-    entry = ''
-    entry_name = ''
-    correct_answer = ''
-    choices = []
-    selected_answer = None
-
     cat = ''
     subcat = ''
     quiz_items = {}
+    num_of_items = 0
+    item_num = 0
 
-    pause_btn = None
-    check_btn = None
-
-    def on_pre_enter(self):
-        self.pause_btn = PauseBtn()
-        self.check_btn = CheckAnswerBtn()
-        self.ids.quiz_sm.current = "options"
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.loadDatabase()
         self.setBackground()
+        self.score_board = ScoreBoard()
+        self.num_of_items = self.countItems(self.quiz_items)
+
+    def on_pre_enter(self, *args):
+        super().on_pre_enter(*args)
+        if self.countItems(self.quiz_items) < self.num_of_items:
+            self.loadDatabase()
+        self.ids.quiz_manager.transition.direction = "left"
+        self.ids.quiz_manager.current = "menu"
+
+    def countItems(self, q_items):
+        count = 0
+        for key in q_items.keys():
+            count += len(q_items[key])
+        return count
+
+    def setBackground(self):
+        if self.cat == "skuylahan":
+            self.ids.background.bg = "skuylahan/school-bg.jpg"
+        else:
+            self.ids.background.bg = "{}/{}-bg.jpg".format(self.cat, self.cat)
 
     def loadDatabase(self):
         # category and subcategory
@@ -41,12 +60,12 @@ class QuizPage(Screen):
         curs = conn.cursor()
         curs.execute("SELECT * FROM multiple_choice WHERE subcategory = :cat", {'cat': self.subcat})
         mtc = curs.fetchall()
-        # curs.execute("SELECT * FROM true_or_false WHERE subcategory = :cat", {'cat': self.subcat})
-        # tof = curs.fetchall()
-        tof = []
-        # curs.execute("SELECT * FROM fill_in_the_blank WHERE subcategory = :cat", {'cat': self.subcat})
-        # fitb = curs.fetchall()
-        fitb = []
+        curs.execute("SELECT * FROM true_or_false WHERE subcategory = :cat", {'cat': self.subcat})
+        tof = curs.fetchall()
+        curs.execute("SELECT * FROM fill_in_the_blank WHERE subcategory = :cat", {'cat': self.subcat})
+        fitb = curs.fetchall()
+        curs.execute("SELECT * FROM matching_type WHERE subcategory = :cat", {'cat': self.subcat})
+        mat = curs.fetchall()
         conn.close()
         # add the fetched items into the quiz items and types
         if mtc:
@@ -55,9 +74,11 @@ class QuizPage(Screen):
             self.quiz_items['tof'] = tof
         if fitb:
             self.quiz_items['fitb'] = fitb
-        print("\nItems: " + str(self.quiz_items))
+        if mat:
+            self.quiz_items['mat'] = mat
+        print("Items: " + str(self.quiz_items))
 
-    def loadQuiz(self):
+    def loadQuizItems(self):
         if self.quiz_items:
             #shuffle the quiz types and items
             temp_items = list(self.quiz_items.items())
@@ -71,482 +92,670 @@ class QuizPage(Screen):
                 self.quiz_items.pop(q_type) #remove the q_type if it's now empty
             
             if q_type == "mtc":
-                # self.manager.current = "multiple-choice"
-                self.ids.quiz_sm.current = "multiple-choice"
-                self.ids.quiz_sm.current_screen.item = q_item
-                self.loadMTC()
+                self.loadMTC(q_item)
             elif q_type == "tof":
-                pass
+                self.loadTOF(q_item)
             elif q_type == "fitb":
-                pass
-            self.ids.quiz_sm.transition.direction = "left"
-
-            # pause button during quiz
-            if self.pause_btn not in self.children:
-                self.add_widget(self.pause_btn)
+                self.loadFITB(q_item)
+            elif q_type == "mat":
+                self.loadMAT(q_item)
+            self.showScoreBoard()
         else:
-            self.ids.quiz_sm.current = "final-result"
+            # final result
+            self.removeScoreBoard()
+            self.ids.quiz_manager.transition.direction = "left"
+            self.ids.quiz_manager.current = "final-result"
 
-    def loadMTC(self):
-        self.ids.quiz_sm.get_screen("multiple-choice").loadEntry()
-        self.ids.quiz_sm.get_screen("multiple-choice").loadChoices()
+    def loadMTC(self, item):
+        print("\nMode: Multiple Choice")
+        self.ids.quiz_manager.get_screen("multiple-choice").loadData(item)
+        self.ids.quiz_manager.get_screen("multiple-choice").loadWidgets()
+        self.ids.quiz_manager.transition.direction = "left"
+        self.ids.quiz_manager.current = "multiple-choice"
 
-    def setBackground(self):
-        if self.cat == "skuylahan":
-            self.ids.content.bg = "skuylahan/school-bg.jpg"
-        else:
-            self.ids.content.bg = "{}/{}-bg.jpg".format(self.cat, self.cat)
+    def loadTOF(self, item):
+        print("\nMode: True or False")
+        self.ids.quiz_manager.get_screen("true-or-false").loadData(item)
+        self.ids.quiz_manager.get_screen("true-or-false").loadWidgets()
+        self.ids.quiz_manager.transition.direction = "left"
+        self.ids.quiz_manager.current = "true-or-false"
+
+    def loadFITB(self, item):
+        print("\nMode: Fill in the Blanks")
+        self.ids.quiz_manager.get_screen("fill-in-the-blank").loadData(item)
+        self.ids.quiz_manager.get_screen("fill-in-the-blank").loadWidgets()
+        self.ids.quiz_manager.transition.direction = "left"
+        self.ids.quiz_manager.current = "fill-in-the-blank"
+
+    def loadMAT(self, item):
+        print("\nMode: Matching Type")
+        self.ids.quiz_manager.get_screen("matching-type").loadData(item)
+        self.ids.quiz_manager.get_screen("matching-type").loadWidgets()
+        self.ids.quiz_manager.transition.direction = "left"
+        self.ids.quiz_manager.current = "matching-type"
+
+    def showScoreBoard(self):
+        if not self.ids.score_board.children:
+            self.ids.score_board.add_widget(self.score_board)
+            # print(self.ids.score_board.children)
+    def removeScoreBoard(self):
+        self.ids.score_board.remove_widget(self.score_board)
+    def updateScoreBoard(self):
+        print("Update ScoreBoard")
+        self.item_num += 1
+        self.score_board.ids.question_num.text = "{}/{}".format(self.item_num, self.num_of_items)
+        self.score_board.ids.score.text = str(self.score)
+    def resetScoreBoardData(self):
+        self.score = 0
+        self.item_num = -1
+        self.updateScoreBoard()
+
+    def showPauseDialog(self):
+        self.pause_dialog = QuizPauseDialog()
+        self.pause_dialog.ids.exit_btn.bind(on_release = self.on_exit_quiz)
+        self.pause_dialog.open()
+    
+    def updateScore(self, points):
+        self.score += points
+
+    def on_exit_quiz(self, exit_btn_instance):
+        print("Exit Quiz")
+        self.removeScoreBoard()
+        self.ids.quiz_manager.transition.direction = "right"
+        self.ids.quiz_manager.current = "menu"
+        self.resetScoreBoardData()
+        self.loadDatabase() #reload the database so it will reset to beginning after exiting
 
     def on_leave(self):
-        self.score = 0
-        self.cat = ''
-        self.subcat = ''
-        self.quiz_items = {}
-        self.pause_btn = None
-        self.check_btn = None
+        self.resetScoreBoardData()
+
 
 class MultipleChoice(Screen):
-    item = None
-    entry = ''
+    source = ""
+    entry = ""
+    correct_answer = ""
+    selected_answer = ""
     choices = []
-    correct_answer = ''
-    selected_answer = None
+
+    check_btn = None
 
     def on_enter(self):
-        print("Mode: Multiple Choice")
+        self.manager.parent.parent.updateScoreBoard()
 
-    def loadEntry(self):
-        self.entry = self.item[0]
-        self.correct_answer = self.item[2]
-        self.choices = self.item[1].split(",")
+    def loadData(self, item):
+        self.source = "{}/{}/".format(item[3], item[4])
+        self.entry = item[0].strip()
+        self.correct_answer = item[2].strip()
+        self.choices = item[1].split(",")
         self.choices.append(self.correct_answer)
         random.shuffle(self.choices)
 
-        cat = self.manager.parent.parent.cat
-        subcat = self.manager.parent.parent.subcat
+    def loadWidgets(self):
+        self.ids.entry.source = self.source + self.entry
+        self.ids.choice_1.text = self.choices[0].strip()
+        self.ids.choice_2.text = self.choices[1].strip()
+        self.ids.choice_3.text = self.choices[2].strip()
+        self.ids.choice_4.text = self.choices[3].strip()
+        self.check_btn = CheckBtn()
+        self.check_btn.bind(on_release = self.on_check_release)
 
-        self.ids.img_entry.source = "{}/{}/{}".format(cat, subcat, self.entry)
+    def resetWidgets(self):
+        self.ids.entry.source = ""
+        self.ids.choice_1.state = 'normal'
+        self.ids.choice_2.state = 'normal'
+        self.ids.choice_3.state = 'normal'
+        self.ids.choice_4.state = 'normal'
+        # no need to remove the check_btn since changing the
+        # state to normal (as above) will dynamically do it
 
-    def loadChoices(self):
-        self.choice_1 = ChoiceToggleButton(text=self.choices[0].strip())
-        self.choice_2 = ChoiceToggleButton(text=self.choices[1].strip())
-        self.choice_3 = ChoiceToggleButton(text=self.choices[2].strip())
-        self.choice_4 = ChoiceToggleButton(text=self.choices[3].strip())
-        self.ids.choices.add_widget(self.choice_1)
-        self.ids.choices.add_widget(self.choice_2)
-        self.ids.choices.add_widget(self.choice_3)
-        self.ids.choices.add_widget(self.choice_4)
+    def on_choice_toggle(self, choice_btn):
+        '''
+        Updates the selected answer.
+        Adds a check button if a choice is selected (down).
+        Removes check button if no choice is selected (choices are in normal state).
+        '''
+        if choice_btn.state == "down":
+            self.selected_answer = choice_btn.text
+            self.ids.check_btn.add_widget(self.check_btn)
+        else:
+            self.selected_answer = ""
+            self.ids.check_btn.remove_widget(self.check_btn)
+        print("My answer is: " + self.selected_answer)
+
+    def on_check_release(self, check_btn_instance):
+        result = self.checkAnswer()
+        if result == "Correct":
+            check_btn_instance.result_dialog.ids.result.text = "[b][color=#00FF00]CORRECT[/color][/b]"
+            check_btn_instance.result_dialog.ids.description.text = "+1 point"
+        else:
+            check_btn_instance.result_dialog.ids.result.text = "[b][color=#FF0000]INCORRECT[/color][/b]"
+            check_btn_instance.result_dialog.ids.description.text = "The correct answer\nis [i]{}[/i].".format(self.correct_answer)
+        
+        check_btn_instance.result_dialog.copyCurrentScreen(self)
+        check_btn_instance.result_dialog.open()
 
     def checkAnswer(self):
-        if self.selected_answer.text == self.correct_answer:
-            self.manager.parent.parent.score += 1
-            return 'Correct'
+        if self.selected_answer == self.correct_answer:
+            self.manager.parent.parent.updateScore(1)
+            return "Correct"
         else:
-            return 'Incorrect'
+            return "Incorrect"
 
-    def addCheckBtn(self):
-        self.add_widget(self.manager.parent.parent.check_btn)
-        print("check button added")
+    def goToNextItem(self):
+        self.resetWidgets()
+        self.manager.parent.parent.loadQuizItems()
 
-    def removeCheckBtn(self):
-        if self.manager.parent.parent.check_btn in self.children:
-            self.remove_widget(self.manager.parent.parent.check_btn)
-            print("check button removed")
+    def on_leave(self):
+        self.resetWidgets()
 
-    def resetEntry(self):
-        self.item = None
-        self.entry = ''
-        self.choices = []
-        self.correct_answer = ''
-        self.selected_answer = None
-
-    def on_pre_leave(self):
-        print("leaving multiple choice")
-        self.ids.choices.remove_widget(self.choice_1)
-        self.ids.choices.remove_widget(self.choice_2)
-        self.ids.choices.remove_widget(self.choice_3)
-        self.ids.choices.remove_widget(self.choice_4)
-        self.removeCheckBtn()
-        self.resetEntry()
 
 class TrueOrFalse(Screen):
-    def on_enter(self):
-        print("Mode: True or False")
+    source = ""
+    entry = ""
+    entry_name = ""
+    correct_answer = ""
+    selected_answer = ""
 
-class Options(Screen):
-    def on_enter(self):
-        print("Options")
-        #removes the pause button
-        if self.manager.parent.parent.pause_btn in self.manager.parent.parent.children:
-            self.manager.parent.parent.remove_widget(self.manager.parent.parent.pause_btn)
+    check_btn = None
 
-class CheckResult(Screen):
     def on_enter(self):
-        t1 = time.clock()
-        t2 = t1 + 1
-        while t1 <= t2:
-            t1 = time.clock()
-        self.manager.parent.parent.loadQuiz()
+        self.manager.parent.parent.updateScoreBoard()
+
+    def loadData(self, item):
+        self.source = "{}/{}/".format(item[3], item[4])
+        self.entry = item[0].strip()
+        self.entry_name = item[1].strip()
+        self.correct_answer = item[2].strip()
+
+    def loadWidgets(self):
+        self.ids.entry.source = self.source + self.entry
+        self.ids.entry_name.text = self.entry_name
+        self.check_btn = CheckBtn()
+        self.check_btn.bind(on_release = self.on_check_release)
+    
+    def resetWidgets(self):
+        self.ids.entry.source = ""
+        self.ids.entry_name.text = ""
+        self.ids.choice_1.state = 'normal'
+        self.ids.choice_2.state = 'normal'
+
+    def on_check_release(self, check_btn_instance):
+        result = self.checkAnswer()
+        if result == "Correct":
+            check_btn_instance.result_dialog.ids.result.text = "[b][color=#00FF00]CORRECT[/color][/b]"
+            check_btn_instance.result_dialog.ids.description.text = "+1 point"
+        else:
+            check_btn_instance.result_dialog.ids.result.text = "[b][color=#FF0000]INCORRECT[/color][/b]"
+            check_btn_instance.result_dialog.ids.description.text = "The correct answer\nis [i]{}[/i].".format(self.correct_answer)
+        check_btn_instance.result_dialog.copyCurrentScreen(self)
+        check_btn_instance.result_dialog.open()
+
+    def on_choice_toggle(self, choice_btn):
+        '''
+        Updates the selected answer.
+        Adds a check button if a choice is selected (down).
+        Removes check button if no choice is selected (choices are in normal state).
+        '''
+        if choice_btn.state == "down":
+            self.selected_answer = choice_btn.text
+            self.ids.check_btn.add_widget(self.check_btn)
+        else:
+            self.selected_answer = ""
+            self.ids.check_btn.remove_widget(self.check_btn)
+        print("My answer is: " + self.selected_answer)
+
+    def checkAnswer(self):
+        if self.selected_answer == self.correct_answer:
+            self.manager.parent.parent.updateScore(1)
+            return "Correct"
+        else:
+            return "Incorrect"
+
+    def goToNextItem(self):
+        self.resetWidgets()
+        self.manager.parent.parent.loadQuizItems()
+
+    def on_leave(self):
+        self.resetWidgets()
+
+
+class FillInTheBlank(Screen):
+    source = ""
+    entry = ""
+    entry_name = ""
+    correct_answer = ""
+    selected_answer = ""
+    choices = []
+    entry_chars = {}
+
+    check_btn = None
+
+    def on_enter(self):
+        self.manager.parent.parent.updateScoreBoard()
+
+    def initEntryChars(self):
+        for i in range(len(self.entry_name)):
+            self.entry_chars[i] = self.entry_name[i]
+
+    def loadData(self, item):
+        self.source = "{}/{}/".format(item[4], item[5])
+        self.entry = item[0].strip()
+        self.entry_name = item[1].strip()
+        self.selected_answer = self.entry_name #the selected answer is initially the entry_name which has blanks (_)
+        self.correct_answer = item[3].strip()
+        self.choices = item[2].split(",")
+        random.shuffle(self.choices)
+        self.initEntryChars()
+
+    def loadEntryNameDisplay(self):
+        entry_text = ""
+        for char in self.entry_chars.values():
+            entry_text += char + " "
+        self.ids.entry_name.text = entry_text.strip()
+
+    def loadWidgets(self):
+        self.ids.entry.source = self.source + self.entry
+        self.ids.choice_1.text = self.choices[0].strip()
+        self.ids.choice_2.text = self.choices[1].strip()
+        self.ids.choice_3.text = self.choices[2].strip()
+        self.ids.choice_4.text = self.choices[3].strip()
+        self.ids.choice_5.text = self.choices[4].strip()
+        self.ids.choice_6.text = self.choices[5].strip()
+        self.check_btn = CheckBtn()
+        self.check_btn.bind(on_release = self.on_check_release)
+        self.loadEntryNameDisplay()
+
+    def resetWidgets(self):
+        self.ids.entry.source = ""
+        self.ids.entry_name.text = ""
+        self.ids.choice_1.state = 'normal'
+        self.ids.choice_2.state = 'normal'
+        self.ids.choice_3.state = 'normal'
+        self.ids.choice_4.state = 'normal'
+        self.ids.choice_5.state = 'normal'
+        self.ids.choice_6.state = 'normal'
+
+    def on_choice_toggle(self, choice_btn):
+        '''
+        Updates the selected answer.
+        Adds a check button if a choice is selected (down).
+        Removes check button if no choice is selected (choices are in normal state).
+        '''
+        if choice_btn.state == "down":
+            if self.answerIsComplete():
+                choice_btn.state = "normal"
+            else:
+                self.addToEntryName(choice_btn)
+                self.addToEntryChars(choice_btn)
+        else:
+            self.removeFromEntryChars(choice_btn)
+            self.removeFromEntryName(choice_btn)
+        
+        if self.answerIsComplete() and self.check_btn not in self.ids.check_btn.children:
+            self.ids.check_btn.add_widget(self.check_btn)
+        elif not self.answerIsComplete() and self.check_btn in self.ids.check_btn.children:
+            self.ids.check_btn.remove_widget(self.check_btn)
+        print("My answer is: " + self.selected_answer)
+
+    def on_check_release(self, check_btn_instance):
+        result = self.checkAnswer()
+        if result == "Correct":
+            check_btn_instance.result_dialog.ids.result.text = "[b][color=#00FF00]CORRECT[/color][/b]"
+            check_btn_instance.result_dialog.ids.description.text = "+1 point"
+        else:
+            check_btn_instance.result_dialog.ids.result.text = "[b][color=#FF0000]INCORRECT[/color][/b]"
+            check_btn_instance.result_dialog.ids.description.text = "The correct answer\nis [i]{}[/i].".format(self.correct_answer)
+        
+        check_btn_instance.result_dialog.copyCurrentScreen(self)
+        check_btn_instance.result_dialog.open()
+
+    def addToEntryName(self, letter_btn):
+        '''
+        Add letter to entry_name's blank and automatically updates selected_answer
+        '''
+        letter_btn.index = self.entry_name.find("_")
+        self.entry_name = self.entry_name.replace("_", letter_btn.text, 1)
+        self.selected_answer = self.entry_name
+    
+    def removeFromEntryName(self, letter_btn):
+        '''
+        Remove letter from its occupied blank and automatically updates selected_answer
+        '''
+        if letter_btn.index >= 0:
+            self.entry_name = self.entry_name[:letter_btn.index] + "_" + self.entry_name[letter_btn.index+1:]
+            self.selected_answer = self.entry_name
+            letter_btn.index = -1
+    
+    def addToEntryChars(self, letter_btn):
+        self.entry_chars[letter_btn.index] = "[u]{}[/u]".format(letter_btn.text)
+        self.loadEntryNameDisplay() #updates the display on screen
+    
+    def removeFromEntryChars(self, letter_btn):
+        if letter_btn.index >= 0:
+            self.entry_chars[letter_btn.index] = "_"
+            self.loadEntryNameDisplay() #updates the display on screen
+
+    def answerIsComplete(self):
+        if "_" in self.selected_answer:
+            return False
+        else:
+            return True
+
+    def checkAnswer(self):
+        if self.selected_answer == self.correct_answer:
+            self.manager.parent.parent.updateScore(1)
+            return "Correct"
+        else:
+            return "Incorrect"
+
+    def goToNextItem(self):
+        self.resetWidgets()
+        self.manager.parent.parent.loadQuizItems()
+
+    def on_leave(self):
+        self.resetWidgets()
+
+
+class MatchingType(Screen):
+    source = "" #source of the image
+    entries = {}
+    entry_names = []
+    entry_images = []
+    selected_answer = {}
+
+    check_btn = None
+
+    def on_enter(self):
+        self.manager.parent.parent.updateScoreBoard()
+
+    def initEntries(self, db_entries):
+        # reset entries
+        self.entries = {}
+        self.entry_names = []
+        self.entry_images = []
+        self.selected_answer = {}
+        # load entries
+        temp_entries = db_entries.split(";")
+        for entry in temp_entries:
+            temp_entry = entry.split(",")
+            self.entries[temp_entry[0].strip()] = temp_entry[1].strip()
+            self.entry_names.append(temp_entry[0].strip())
+            self.entry_images.append(temp_entry[1].strip())
+        print("Entries:", str(self.entries))
+        print("Entry Names:", str(self.entry_names))
+        print("Entry Images:", str(self.entry_images))
+
+    def loadData(self, item):
+        self.source = "{}/{}/".format(item[1], item[2])
+        self.initEntries(item[0])
+        random.shuffle(self.entry_names)
+        random.shuffle(self.entry_images)
+
+    def loadWidgets(self):
+        self.ids.entry_name_1.text = self.entry_names[0]
+        self.ids.entry_name_2.text = self.entry_names[1]
+        self.ids.entry_name_3.text = self.entry_names[2]
+        self.ids.entry_name_4.text = self.entry_names[3]
+        self.ids.entry_name_5.text = self.entry_names[4]
+        self.ids.entry_img_1.source = self.source + self.entry_images[0]
+        self.ids.entry_img_2.source = self.source + self.entry_images[1]
+        self.ids.entry_img_3.source = self.source + self.entry_images[2]
+        self.ids.entry_img_4.source = self.source + self.entry_images[3]
+        self.ids.entry_img_5.source = self.source + self.entry_images[4]
+        self.check_btn = CheckBtn()
+        self.check_btn.bind(on_release = self.on_check_release)
+    
+    def resetWidgets(self):
+        self.ids.entry_name_1.text = ""
+        self.ids.entry_name_2.text = ""
+        self.ids.entry_name_3.text = ""
+        self.ids.entry_name_4.text = ""
+        self.ids.entry_name_5.text = ""
+        self.ids.entry_img_1.source = ""
+        self.ids.entry_img_2.source = ""
+        self.ids.entry_img_3.source = ""
+        self.ids.entry_img_4.source = ""
+        self.ids.entry_img_5.source = ""
+        if self.check_btn in self.ids.check_btn.children:
+            self.ids.check_btn.remove_widget(self.check_btn)
+        for child in self.ids.mat_canvas.children:
+            if type(child) is MATBtnNumber or type(child) is MATBtnLetter:
+                child.reset()
+
+    def addToSelectedAnswer(self, name, image):
+        self.selected_answer[name] = image
+        if len(self.selected_answer) == len(self.entries):
+            self.ids.check_btn.add_widget(self.check_btn)
+        print("Answer: ", str(self.selected_answer))
+    
+    def removeFromSelectedAnswer(self, name):
+        self.selected_answer.pop(name)
+        if self.check_btn in self.ids.check_btn.children:
+            self.ids.check_btn.remove_widget(self.check_btn)
+        print("Answer: ", str(self.selected_answer))
+
+    def on_check_release(self, check_btn_instance):
+        points = self.checkAnswer()
+        if points:
+            check_btn_instance.result_dialog.ids.result.text = "[b][color=#00FF00]{} correct[/color][/b]".format(points)
+        else:
+            check_btn_instance.result_dialog.ids.result.text = "[b][color=#FF0000]0 correct[/color][/b]"
+        check_btn_instance.result_dialog.ids.description.text = "+{} point(s)".format(points)
+        
+        check_btn_instance.result_dialog.copyCurrentScreen(self)
+        check_btn_instance.result_dialog.open()
+
+    def checkAnswer(self):
+        points = 0
+        for entry_name in self.selected_answer.keys():
+            if self.selected_answer[entry_name] == self.entries[entry_name]:
+                points += 1
+        self.manager.parent.parent.updateScore(points)
+        return points
+
+    def goToNextItem(self):
+        self.resetWidgets()
+        self.manager.parent.parent.loadQuizItems()
+
+    def on_leave(self):
+        self.resetWidgets()
+
+
+class Menu(Screen):
+    pass
+
+class BlankScreen(Screen):
+    pass
 
 class FinalResult(Screen):
     pass
 
-class PauseBtn(FloatLayout):
+
+# LAYOUTS
+class ScoreBoard(RelativeLayout):
     pass
 
-class CheckAnswerBtn(FloatLayout):
-    def showResult(self):
-        '''
-        Displays the result in check result Screen
-        '''
-        # remove pause button while result is showed
-        if self.parent.manager.parent.parent.pause_btn in self.parent.manager.parent.parent.children:
-            self.parent.manager.parent.parent.remove_widget(self.parent.manager.parent.parent.pause_btn)
-        # checks result and update score
-        res = self.parent.checkAnswer()
-        score = self.parent.manager.parent.parent.score
-        self.parent.manager.get_screen("check-result").ids.result.text = res
-        self.parent.manager.get_screen("check-result").ids.score.text = "Score: " + str(score)
-        self.parent.manager.current = "check-result"
+class MATcanvas(RelativeLayout):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.start_point = None
 
-class ChoiceToggleButton(MDRectangleFlatButton):
-    def on_release(self):
-        print("Pressed: " + self.text)
-        button_highlight_color = self.canvas.before.children[0].rgba #Blue
-        text_highlight_color = (1,1,1,1) #White
-        text_normal_color = self.canvas.before.children[0].rgba #Blue
-        if self.parent.parent.parent.selected_answer is None:
-            self.parent.parent.parent.selected_answer = self
-            # turn on highlight
-            self.canvas.before.add(Color(rgba = button_highlight_color))
-            self.canvas.before.add(Rectangle(size = self.size, pos = self.pos))
-            self.text_color = text_highlight_color #highlight text color
-            print("My answer is: " + self.text)
-            # add check button
-            self.parent.parent.parent.addCheckBtn()
-        else:
-            if self.parent.parent.parent.selected_answer == self:
-                self.parent.parent.parent.selected_answer = None
-                # toggle off highlight
-                self.canvas.before.children.pop() #pop the Rectangle
-                self.canvas.before.children.pop() #pop the BindTexture
-                self.canvas.before.children.pop() #pop the Color
-                self.text_color = text_normal_color #change text color to normal
-                # remove check button
-                self.parent.parent.parent.removeCheckBtn()
+    def updateStartPoint(self, point):
+        self.start_point = point
+
+    def resetStartPoint(self):
+        self.start_point = None
+
+
+# POPUP/DIALOG
+class QuizPauseDialog(MDDialog):
+    pass
+
+class CheckResultDialog(MDDialog):
+    def on_open(self):
+        self.delay()
+        self.dismiss()
+
+    def delay(self):
+        t1 = time.clock()
+        t2 = t1 + 1.5
+        while t1 <= t2:
+            t1 = time.clock()
+
+    def copyCurrentScreen(self, current_screen):
+        self.current_screen = current_screen
+
+    def on_dismiss(self):
+        self.current_screen.manager.current = "blank-screen"
+        self.current_screen.goToNextItem()
+
+
+# BUTTONS
+class ChoiceToggleBtn(ToggleButton):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.group = "choices"
+        self.size_hint = (.8,.2)
+        self.pos_hint = {"center_x": .5}
+
+class FITBbutton(ToggleButton):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.index = -1
+
+class CheckBtn(MDTextButton):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.markup = True
+        self.text = "[u]Check Answer[/u]"
+        self.pos_hint = {"center_x": .5, "center_y": .5}
+        self.result_dialog = CheckResultDialog()
+
+class MATBtnNumber(Button):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.size_hint = None, None
+        self.size = "20dp", "20dp"
+        self.type = "number"
+        self.paired = False
+        self.pair = None
+        self.line = None
+
+    def setLine(self, line):
+        self.line = line
+
+    def getLinePoints(self, line_points):
+        self.line_points = line_points
+
+    def on_touch_down(self, touch):
+        self.x1, self.y1 = self.pos
+        self.x2, self.y2 = self.pos[0]+self.size[0], self.pos[1]+self.size[1]
+        if self.x1 < touch.x < self.x2 and self.y1 < touch.y < self.y2:
+            if self.paired:
+                self.clearHighlight()
+                self.line = None
+                self.pair.clearHighlight()
+                self.pair.line = None
+                self.unpair()
+            self.line_x1, self.line_y1 = (self.x1+self.x2)/2, (self.y1+self.y2)/2
+            with self.canvas.after:
+                Color(0, 0, 1)
+                self.point = Rectangle(pos=self.pos, size=self.size)
+                touch.ud['line'] = Line(points=(self.line_x1, self.line_y1, self.line_x1, self.line_y1), width=2)
+            self.bind(size = self.updatePoint, pos = self.updatePoint)
+            self.parent.updateStartPoint(self)
+
+    def on_touch_up(self, touch):
+        if self.parent.start_point and self.x1 < touch.x < self.x2 and self.y1 < touch.y < self.y2:
+            if self.parent.start_point.type != self.type:
+                if self.paired:
+                    if self.pair != self.parent.start_point:
+                        self.pair.clearHighlight()
+                        self.pair.line = None
+                    self.clearHighlight()
+                    self.line = None
+                    self.unpair()
+                self.pair = self.parent.start_point
+                self.paired = True
+                self.pair.pair = self
+                self.pair.paired = True
+                self.getLinePoints(self.pair.line_points)
+                with self.canvas.after:
+                    Color(0, 0, 1)
+                    self.point = Rectangle(pos=self.pos, size=self.size)
+                    self.line = Line(points = self.line_points, width = 2)
+                self.bind(size = self.updatePoint, pos = self.updatePoint)
+                self.pair.canvas.after.children.pop()
+                self.pair.canvas.after.children.pop()
+                print("valid in", self.text)
+                if self.type == "number":
+                    ans_name = self.answer.strip()
+                    ans_img = str(self.pair.answer).split("/")[-1]
+                    self.parent.parent.parent.addToSelectedAnswer(ans_name, ans_img)
+                else:
+                    ans_name = self.pair.answer.strip()
+                    ans_img = str(self.answer).split("/")[-1]
+                    self.parent.parent.parent.addToSelectedAnswer(ans_name, ans_img)
             else:
-                # toggle off highlight of previously selected answer/choice
-                self.parent.parent.parent.selected_answer.canvas.before.children.pop()
-                self.parent.parent.parent.selected_answer.canvas.before.children.pop()
-                self.parent.parent.parent.selected_answer.canvas.before.children.pop()
-                self.parent.parent.parent.selected_answer.text_color = text_normal_color
-                self.parent.parent.parent.selected_answer = self
-                # turn on highlight for the new selected answer
-                self.canvas.before.add(Color(rgba = button_highlight_color))
-                self.canvas.before.add(Rectangle(size = self.size, pos = self.pos))
-                self.text_color = text_highlight_color #highlight the new selected choice text color
-                print("My answer is: " + self.text)
+                print("Invalid in", self.text)
+                self.parent.start_point.clearHighlight()
+            # print(self.type, self.parent.start_point.type)
+            self.parent.resetStartPoint()
 
-        self.bind(size = self.updateHighlight, pos = self.updateHighlight)
+    def updatePoint(self, *args):
+        self.point.size = self.size
+        self.point.pos = self.pos
+        # for the line
+        if self.line and self.paired:
+            self.x1, self.y1 = self.pair.pos
+            self.x2, self.y2 = self.pair.pos[0]+self.pair.size[0], self.pair.pos[1]+self.pair.size[1]
+            self.line_x1, self.line_y1 = (self.x1+self.x2)/2, (self.y1+self.y2)/2
+            self.x1, self.y1 = self.pos
+            self.x2, self.y2 = self.pos[0]+self.size[0], self.pos[1]+self.size[1]
+            self.line_x2, self.line_y2 = (self.x1+self.x2)/2, (self.y1+self.y2)/2
+            self.line.points = self.line_x1, self.line_y1, self.line_x2, self.line_y2
 
-    def updateHighlight(self, instance, value):
-        '''
-        Dynamically change the size and position of the highlight
-        when the layout's size/pos changes
-        '''
-        if len(instance.canvas.before.children) > 3:
-            instance.canvas.before.children[-1].size = instance.size
-            instance.canvas.before.children[-1].pos = instance.pos
+    def on_touch_move(self, touch):
+        if self.parent.start_point:
+            x1, y1 = self.parent.start_point.pos
+            x2, y2 = x1+self.parent.start_point.size[0], y1+self.parent.start_point.size[1]
+            self.parent.start_point.line_x1, self.parent.start_point.line_y1 = (x1+x2)/2, (y1+y2)/2
+            line_x1, line_y1 = self.parent.start_point.line_x1, self.parent.start_point.line_y1
+            self.line_x2, self.line_y2 = touch.x, touch.y
+            touch.ud['line'].points = [line_x1, line_y1, self.line_x2, self.line_y2]
+            self.getLinePoints(touch.ud['line'].points)
 
+    def clearHighlight(self):
+        self.canvas.after.clear()
+        print("Cleared", self.text)
 
+    def unpair(self):
+        if self.type == "number":
+            self.parent.parent.parent.removeFromSelectedAnswer(self.answer.strip())
+        else:
+            self.parent.parent.parent.removeFromSelectedAnswer(self.pair.answer.strip())
+        self.pair.pair = None
+        self.pair.paired = False
+        self.pair = None
+        self.paired = False
 
-# class QuizPage(Screen):
-#     score = 0
-#     entry = ''
-#     entry_name = ''
-#     correct_answer = ''
-#     choices = []
-#     selected_answer = None
-#     choice_border_color = (0,0,1,1) #color of the choices buttons' border
+    def reset(self):
+        self.canvas.after.clear()
+        self.pair = None
+        self.paired = False
 
-#     def on_enter(self):
-#         self.loadDatabase()
-#         self.loadQuiz()
+class MATBtnLetter(MATBtnNumber):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.size_hint = None, None
+        self.size = "20dp", "20dp"
+        self.type = "letter"
+        self.paired = False
+        self.pair = None
+        self.line = None
 
-#     def loadDatabase(self):
-#         # category and subcategory
-#         # self.cat =  self.manager.category_tracker[0].lower() #converted to lower case to match
-#         # self.subcat = self.manager.category_tracker[1].lower()
-#         self.cat = "balay"
-#         self.subcat = "pamilya-timbaya"
-#         # fetch quiz data from the quiz database (quiz.db)
-#         conn = sqlite3.connect('quiz.db')
-#         curs = conn.cursor()
-#         curs.execute("SELECT * FROM multiple_choice WHERE subcategory = :cat", {'cat': self.subcat})
-#         mtc = curs.fetchall()
-#         # curs.execute("SELECT * FROM true_or_false WHERE subcategory = :cat", {'cat': self.subcat})
-#         # tof = curs.fetchall()
-#         tof = []
-#         # curs.execute("SELECT * FROM fill_in_the_blank WHERE subcategory = :cat", {'cat': self.subcat})
-#         # fitb = curs.fetchall()
-#         fitb = []
-#         conn.close()
-#         # add the fetched items into the quiz items dictionary
-#         self.quiz_types = ["mtc", "tof", "fitb"] #contain the quiz types
-#         self.quiz_items = {'mtc': mtc, 'tof': tof, 'fitb': fitb} #contain the fetched quiz items
-#         print("Items: " + str(self.quiz_items))
-
-#     def loadQuiz(self):
-#         print("Starting Quiz")
-#         #set background image of the quiz
-#         bg = self.cat + "-bg.jpg"
-#         if self.cat == "skuylahan":
-#             bg = "school-bg.jpg"
-#         self.ids.content.bg = "{}/{}".format(self.cat, bg)
-        
-#         while(self.quiz_items):
-#             random.shuffle(self.quiz_types) #shuffles the quiz types
-#             q_type = self.quiz_types[0]
-#             if not self.quiz_items[q_type]:
-#                 # remove the first quiz type (also from the dictionary) if it's empty
-#                 self.quiz_items.pop(q_type)
-#                 self.quiz_types.remove(q_type)
-#                 continue
-            
-#             random.shuffle(self.quiz_items[q_type]) #shuffles the items of the first quiz type
-#             q_item = self.quiz_items[q_type].pop(0) #return and remove first quiz item
-            
-#             proceed = False
-#             if q_type == "mtc": #if multiple choice
-#                 self.loadMultipleChoice(q_item)
-#             elif q_type == "tof": #if true or False
-#                 pass
-#             elif q_type == "fitb": #if Fill in the Blank
-#                 pass
-
-#         # if self.mode == "multiple choice":
-#         #     self.loadMultipleChoice()
-#         # elif self.mode == "true or false":
-#         #     self.ids.img_name.text = "Sala"
-#         #     self.loadTrueOrFalse()
-#         #     # self.loadTest()
-#         # elif self.mode == "fill in the blank":
-#         #     self.entry_text = "_ap_"
-#         #     self.entry_text_parsed = []
-#         #     self.blanks_count = 0
-#         #     for x in self.entry_text:
-#         #         if x == '_':
-#         #             self.blanks_count += 1
-#         #             self.entry_text_parsed.append(str("{} "))
-#         #         else:
-#         #             self.entry_text_parsed.append(x + " ")    
-#         #     self.entry_text_parsed[-1] = str(self.entry_text_parsed[-1]).strip()
-#         #     self.loadFillInTheBlank()
-
-#     def loadMultipleChoice(self, item):
-#         print("Mode: Multiple Choice")
-#         self.entry = item[0]
-#         self.correct_answer = item[2]
-#         self.choices = item[1].split(",")
-#         self.choices.append(self.correct_answer)
-#         random.shuffle(self.choices)
-#         # set img_entry
-#         self.ids.img_entry.source = "{}/{}/{}".format(self.cat, self.subcat, self.entry)
-#         # set 1 column for the choices
-#         self.ids.choices.cols = 1
-#         #create choices buttons
-#         choice_1 = MDRectangleFlatButton(text = self.choices[0], line_color = self.choice_border_color)
-#         choice_2 = MDRectangleFlatButton(text = self.choices[1], line_color = self.choice_border_color)
-#         choice_3 = MDRectangleFlatButton(text = self.choices[2], line_color = self.choice_border_color)
-#         choice_4 = MDRectangleFlatButton(text = self.choices[3], line_color = self.choice_border_color)
-#         #bind the buttons
-#         choice_1.bind(on_release = self.highlightToggle)
-#         choice_2.bind(on_release = self.highlightToggle)
-#         choice_3.bind(on_release = self.highlightToggle)
-#         choice_4.bind(on_release = self.highlightToggle)
-#         #add the choices buttons to the choices layout
-#         self.ids.choices.add_widget(choice_1)
-#         self.ids.choices.add_widget(choice_2)
-#         self.ids.choices.add_widget(choice_3)
-#         self.ids.choices.add_widget(choice_4)
-
-#         #check answer button
-#         check_btn = MDTextButton(text="Check Answer")
-#         check_btn.pos_hint = {'center_x': .5, 'y': .1}
-#         # check_btn.bind(on_release = self.checkAnswer)
-
-#     def loadTrueOrFalse(self):
-#         print("Mode: True or False")
-#         self.ids.choices.cols = 2
-#         #create choices buttons
-#         choice_1 = MDRectangleFlatButton(text = "true", line_color = self.choice_border_color)
-#         choice_2 = MDRectangleFlatButton(text = "false", line_color = self.choice_border_color)
-#         #bind the buttons
-#         choice_1.bind(on_release = self.highlightToggle)
-#         choice_2.bind(on_release = self.highlightToggle)
-#         #add the choices buttons to the choices layout
-#         self.ids.choices.add_widget(choice_1)
-#         self.ids.choices.add_widget(choice_2)
-
-#     def loadFillInTheBlank(self):
-#         print("Mode: Fill in the blanks")
-#         self.ids.choices.cols = 3
-#         #create choices buttons
-#         choice_1 = MDRectangleFlatButton(text = "a", line_color = self.choice_border_color)
-#         choice_2 = MDRectangleFlatButton(text = "k", line_color = self.choice_border_color)
-#         choice_3 = MDRectangleFlatButton(text = "l", line_color = self.choice_border_color)
-#         choice_4 = MDRectangleFlatButton(text = "n", line_color = self.choice_border_color)
-#         choice_5 = MDRectangleFlatButton(text = "y", line_color = self.choice_border_color)
-#         choice_6 = MDRectangleFlatButton(text = "p", line_color = self.choice_border_color)
-#         #bind the buttons
-#         choice_1.bind(on_release = self.highlightToggleForFITB)
-#         choice_2.bind(on_release = self.highlightToggleForFITB)
-#         choice_3.bind(on_release = self.highlightToggleForFITB)
-#         choice_4.bind(on_release = self.highlightToggleForFITB)
-#         choice_5.bind(on_release = self.highlightToggleForFITB)
-#         choice_6.bind(on_release = self.highlightToggleForFITB)
-#         #add the choices buttons to the choices layout
-#         self.ids.choices.add_widget(choice_1)
-#         self.ids.choices.add_widget(choice_2)
-#         self.ids.choices.add_widget(choice_3)
-#         self.ids.choices.add_widget(choice_4)
-#         self.ids.choices.add_widget(choice_5)
-#         self.ids.choices.add_widget(choice_6)
-
-#         #for fitb
-#         self.ids.img_name.markup = True
-#         # self.underline_open = "[u]"
-#         # self.underline_close = "[/u]"
-#         self.ids.img_name.font_name = "DejaVuSans.ttf"
-#         self.entry_text = ""
-#         for x in self.entry_text_parsed:
-#             if x.startswith("{"):
-#                 self.entry_text += x.format("_")
-#             else:
-#                 self.entry_text += x
-#         self.ids.img_name.text = self.entry_text #displays the entry text (with blanks)
-#         self.selected_answer = {} #contains {index: choice} pair i.e. the selected letters/choices and their filled blank' index
-
-#     def highlightToggleForFITB(self, choice):
-#         '''
-#         Hightlights the selected letters
-#         '''
-#         print(choice.text + " pressed ")
-
-#         if choice in self.selected_answer.values():
-#             # self.selected_answer.remove(choice) #removes the choice from selected answers
-#             index = 0
-#             for i in self.selected_answer:
-#                 if self.selected_answer[i] == choice:
-#                     index = i
-#                     self.selected_answer.pop(i)
-#                     break
-#             self.updateEntry(choice, index)
-#             # removes the highlight of the deselected choice
-#             choice.text_color = (0,0,1,1)
-#             choice.canvas.before.children.pop()
-#             choice.canvas.before.children.pop()
-#             choice.canvas.before.children.pop()
-#         elif len(self.selected_answer) == self.blanks_count:
-#             print("All blanks filled, deselect a letter to replace with a different one")
-#         else:
-#             # self.selected_answer.append(choice) #add the choice to selected answers
-#             self.selected_answer.update({self.entry_text.find("_"): choice})
-#             self.updateEntry(choice)
-#             # adds highlight to the selected choice
-#             choice.text_color = (1,1,1,1)
-#             choice.canvas.before.add(Color(0,0,1,1))
-#             choice.canvas.before.add(Rectangle(size = choice.size, pos = choice.pos))
-
-#         choice.bind(size = self.updateHighlight, pos = self.updateHighlight)
-
-#     def updateEntry(self, choice, index=0):
-#         '''
-#         Updates the blanks in the entry text when a choice has been selected or deselected. It either writes
-#         the choice to a blank (selected) or removes the choice from its occupied blank (deselected).
-#         '''
-#         if choice in self.selected_answer.values():
-#             #selected (adds letter to the first unoccupied blank)
-#             temp = self.entry_text
-#             if len(self.selected_answer) > 1:
-#                 ans_copy = self.selected_answer.copy()
-#                 ans_copy.popitem()
-#                 i = 0
-#                 for x in sorted(ans_copy.keys()):
-#                     if x != list(sorted(ans_copy.keys()))[0]:
-#                         i += 7
-#                     temp = temp[:x+i] + "[u]{}[/u]".format(ans_copy[x].text) + temp[x+i+1:]
-#             temp = temp.replace("_", "[u]{}[/u]", 1)
-#             self.ids.img_name.text = temp.format(choice.text) #display the entry text label with filled blanks
-#             self.entry_text = self.entry_text.replace("_", choice.text, 1)
-#         else:
-#             #deselected (removes letter from its occupied blank)
-#             self.entry_text = self.entry_text[:index] + "_" + self.entry_text[index+1:] #replaces the deselected letter with blank "_"
-#             temp = self.entry_text
-#             if self.selected_answer:
-#                 ans_copy = self.selected_answer.copy()
-#                 i = 0
-#                 for x in sorted(ans_copy.keys()):
-#                     if x != list(sorted(ans_copy.keys()))[0]:
-#                         i += 7
-#                     temp = temp[:x+i] + "[u]{}[/u]".format(ans_copy[x].text) + temp[x+i+1:]
-#             self.ids.img_name.text = temp
-
-#     def highlightToggle(self, choice):
-#         '''
-#         Hightlights the selected choice
-#         '''
-#         print(choice.text + " pressed ")
-#         button_highlight_color = (0,0,1,1) #Blue
-#         text_highlight_color = (1,1,1,1) #White
-#         text_normal_color = (0,0,1,1) #Blue
-
-#         if self.selected_answer is None:
-#             self.selected_answer = choice
-#             # turn on highlight
-#             choice.canvas.before.add(Color(rgba = button_highlight_color))
-#             choice.canvas.before.add(Rectangle(size = choice.size, pos = choice.pos))
-#             choice.text_color = text_highlight_color #highlight text color
-#             print("My answer is: " + self.selected_answer.text)
-#         else:
-#             if self.selected_answer.text == choice.text:
-#                 self.selected_answer = None
-#                 # toggle off highlight of the answer
-#                 choice.canvas.before.children.pop() #pop the Rectangle
-#                 choice.canvas.before.children.pop() #pop the BindTexture
-#                 choice.canvas.before.children.pop() #pop the Color
-#                 choice.text_color = text_normal_color #change text color to normal
-#             else:
-#                 # toggle off highlight of previously selected answer/choice
-#                 self.selected_answer.canvas.before.children.pop() #pops the Rectangle
-#                 self.selected_answer.canvas.before.children.pop() #pops the BindTexture
-#                 self.selected_answer.canvas.before.children.pop() #pops the Color
-#                 self.selected_answer.text_color = text_normal_color #change text color to normal
-#                 self.selected_answer = choice #assign the selected choice as the new selected answer
-#                 # turn on highlight for the new selected answer
-#                 choice.canvas.before.add(Color(rgba = button_highlight_color))
-#                 choice.canvas.before.add(Rectangle(size = choice.size, pos = choice.pos))
-#                 choice.text_color = text_highlight_color #highlight the new selected choice text color
-#                 print("My answer is: " + self.selected_answer.text)
-        
-#         choice.bind(size = self.updateHighlight, pos = self.updateHighlight)
-
-#     def updateHighlight(self, instance, value):
-#         '''
-#         Dynamically change the size and position of the highlight
-#         when the layout's size/pos changes
-#         '''
-#         if len(instance.canvas.before.children) > 3:
-#             instance.canvas.before.children[-1].size = instance.size
-#             instance.canvas.before.children[-1].pos = instance.pos
-
-#     def clearProgress(self):
-#         self.score = 0
-#         self.entry = ''
-#         self.entry_name = ''
-#         self.correct_answer = ''
-#         self.choices = []
-#         self.selected_answer = None
-#         self.ids.entry_name.text = ""
-#         self.ids.choices.canvas.clear()
-#         self.ids.choices.clear_widgets()
+class MATLastTouch(Label):
+    def on_touch_up(self, touch):
+        if self.parent.start_point:
+            self.parent.start_point.clearHighlight()
+            self.parent.resetStartPoint()
