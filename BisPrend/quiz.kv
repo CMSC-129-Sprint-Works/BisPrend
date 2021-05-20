@@ -1,188 +1,491 @@
-# : import RiseInTransition kivy.uix.screenmanager.RiseInTransition
-
-<QuizPortal@FloatLayout>
-    Label:
-        text: "Well Done!"
-        font_name: "Mont"
-        font_size: 40
-        pos_hint: {'center_y': 0.60, 'center_x': 0.50}
-        color: 0.12, 0.12, 0.12
-    MDFillRoundFlatButton:
-        text: "take quiz"
-        md_bg_color: [1,0.8,0.4,1]
-        text_color: 0.12, 0.12, 0.12
-        font_size: 20
-        font_name: "Mont"
-        # size_hint: (0.30,0.5)
-        size: (100, 100)
-        pos_hint: {'center_y': 0.45, 'center_x': 0.5}
-        on_release:
-            app.root.current = "quiz"
-            app.root.transition.direction = "up"
-
-<PauseBtn>
-    MDRectangleFlatButton:
-        text: "Pause"
-        font_name: "Mont"
-        theme_text_color: 'Custom'
-        text_color: 0, 0, 0, 1
-        size: (150, 90)
-        pos_hint: {'y':0.90,'x':0.075}
-        on_release:
-            root.parent.ids.quiz_sm.current = "options" #for testing
-            root.parent.ids.quiz_sm.transition.direction = "right"
-<CheckAnswerBtn>
-    MDTextButton:
-        text: 'Check Answer'
-        pos_hint: {"center_x": .5, "center_y": .1}
-        on_release:
-            # root.parent.manager.current = "check-result"
-            root.showResult()
 
 <QuizPage>:
-    name: "quiz-manager"
-    FloatLayout:
-        id: content
+    name: "quiz"
+    BoxLayout:
+        id: background
         orientation: 'vertical'
-        size_hint: (1, 1)
+        padding: "10dp"
+        spacing: "10dp"
         bg: ""
         canvas:
             Rectangle:
                 size: root.width, root.height
                 source: self.bg
+        RelativeLayout:
+            id: score_board
+            size_hint: 1, .15
         ScreenManager:
-            id: quiz_sm
-            Options:
+            id: quiz_manager
+            Menu:
             MultipleChoice:
             TrueOrFalse:
-            CheckResult:
+            FillInTheBlank:
+            MatchingType:
             FinalResult:
+            BlankScreen:
 
-<Options>:
-    name: "options"
-    FloatLayout:
-        orientation: 'vertical'
-        MDRectangleFlatButton:
-            text: 'Start Quiz'
-            size_hint: 0.5, 0.15
-            pos_hint: {'center_x': .5, 'top': .8}
+# QUIZ SCREENS
+<Menu>:
+    name: "menu"
+    BoxLayout:
+        orientation: "vertical"
+        spacing: "20dp"
+        FloatLayout:
+            Label:
+                text: "Welcome to Bisaya Quiz"
+                color: 0,0,0,1
+                font_name: "Mont"
+                font_size: 40
+                pos_hint: {"center_x": .5, "center_y": .5}
+        Button:
+            text: "Start"
+            font_name: "Mont"
+            font_size: 20
+            size_hint: .7, 1
+            pos_hint: {"center_x": .5}
             on_release:
-                root.manager.parent.parent.loadQuiz()
-        MDRectangleFlatButton:
-            text: 'Instructions'
-            size_hint: 0.5, 0.15
-            pos_hint: {'center_x': .5, 'top': .6}
-        MDRectangleFlatButton:
-            text: 'Exit Quiz'
-            size_hint: 0.5, 0.15
-            pos_hint: {'center_x': .5, 'top': .4}
+                root.manager.parent.parent.loadQuizItems()
+        Button:
+            text: "Instructions"
+            font_name: "Mont"
+            font_size: 20
+            size_hint: .7, 1
+            pos_hint: {"center_x": .5}
+        Button:
+            text: "Exit"
+            font_name: "Mont"
+            font_size: 20
+            size_hint: .7, 1
+            pos_hint: {"center_x": .5}
             on_release:
-                root.manager.parent.parent.manager.current = "menu"
-                root.manager.parent.parent.manager.transition.direction = 'right'
+                root.manager.parent.parent.manager.transition.direction = "right"
+                root.manager.parent.parent.manager.current = "portal"
+        BoxLayout:
 
 <MultipleChoice>:
     name: "multiple-choice"
-    FloatLayout:
-        orientation: 'vertical'
+    BoxLayout:
+        orientation: "vertical"
+        padding: "10dp"
+        spacing: "10dp"
+        canvas:
+            Color:
+                rgba: 1,1,1,.8
+            Rectangle:
+                size: root.width, root.height
         Image:
-            id: img_entry
-            source: ''
-            size_hint: .5, .3
-            pos_hint: {'center_x': .5, 'y': .5}
-        MDGridLayout:
-            id: choices
-            cols: 1
-            # orientation: 'vertical'
-            spacing: '5dp'
-            adaptive_size: True
-            pos_hint: {"center_x": .3, "center_y": .3}
+            id: entry
+            source: "bg/bg-1.jpg"
+        BoxLayout:
+            spacing: "5dp"
+            orientation: "vertical"
+            ChoiceToggleBtn:
+                id: choice_1
+                text: ""
+                on_state: root.on_choice_toggle(self)
+            ChoiceToggleBtn:
+                id: choice_2
+                text: ""
+                on_state: root.on_choice_toggle(self)
+            ChoiceToggleBtn:
+                id: choice_3
+                text: ""
+                on_state: root.on_choice_toggle(self)
+            ChoiceToggleBtn:
+                id: choice_4
+                text: ""
+                on_state: root.on_choice_toggle(self)
+        RelativeLayout:
+            id: check_btn
+            size_hint: 1, .2
 
 <TrueOrFalse>
     name: "true-or-false"
+    BoxLayout:
+        orientation: "vertical"
+        padding: "10dp"
+        spacing: "10dp"
+        canvas:
+            Color:
+                rgba: 1,1,1,.8
+            Rectangle:
+                size: root.width, root.height
+        BoxLayout:
+            orientation: "vertical"
+            spacing: "10dp"
+            Image:
+                id: entry
+                source: "bg/bg-1.jpg"
+            AnchorLayout:
+                anchor_y: "top"
+                size_hint: 1, .05
+                Label:
+                    id: entry_name
+                    text: "Entry Name"
+                    color: 0,0,0,1
+                    font_size: "24dp"
+            Label:
+                text: ""
+                size_hint: 1, .1
+        BoxLayout:
+            spacing: "5dp"
+            orientation: "vertical"
+            size_hint: 1, .3
+            ChoiceToggleBtn:
+                id: choice_1
+                text: "Sakto"
+                on_state: root.on_choice_toggle(self)
+            ChoiceToggleBtn:
+                id: choice_2
+                text: "Sayop"
+                on_state: root.on_choice_toggle(self)
+        RelativeLayout:
+            id: check_btn
+            size_hint: 1, .15
 
-<CheckResult>
-    name: "check-result"
-    FloatLayout:
-        Label:
-            id: result
-            text: 'RESULT'
-            font_name: 'Mont'
-            font_size: 40
-            color: (0,0,0,1)
-            pos_hint: {"center_x": .5, "center_y": .6}
-        Label:
-            id: score
-            text: 'Score: '
-            font_name: 'Mont'
-            font_size: 20
-            color: (0,0,0,1)
-            pos_hint: {"center_x": .5, "center_y": .5}
+<FillInTheBlank>
+    name: "fill-in-the-blank"
+    BoxLayout:
+        orientation: "vertical"
+        padding: "10dp"
+        spacing: "10dp"
+        canvas:
+            Color:
+                rgba: 1,1,1,.8
+            Rectangle:
+                size: root.width, root.height
+        BoxLayout:
+            orientation: "vertical"
+            spacing: "10dp"
+            Image:
+                id: entry
+                source: "bg/bg-1.jpg"
+            AnchorLayout:
+                anchor_y: "top"
+                size_hint: 1, .05
+                Label:
+                    id: entry_name
+                    markup: True
+                    text: "Entry Name"
+                    color: 0,0,0,1
+                    font_size: "24dp"
+            Label:
+                text: ""
+                size_hint: 1, .1
+        GridLayout:
+            cols: 3
+            spacing: "5dp"
+            # orientation: "vertical"
+            size_hint: .7, .3
+            pos_hint: {"center_x": .5}
+            FITBbutton:
+                id: choice_1
+                text: "_"
+                on_state: root.on_choice_toggle(self)
+            FITBbutton:
+                id: choice_2
+                text: "_"
+                on_state: root.on_choice_toggle(self)
+            FITBbutton:
+                id: choice_3
+                text: "_"
+                on_state: root.on_choice_toggle(self)
+            FITBbutton:
+                id: choice_4
+                text: "_"
+                on_state: root.on_choice_toggle(self)
+            FITBbutton:
+                id: choice_5
+                text: "_"
+                on_state: root.on_choice_toggle(self)
+            FITBbutton:
+                id: choice_6
+                text: "_"
+                on_state: root.on_choice_toggle(self)
+        RelativeLayout:
+            id: check_btn
+            size_hint: 1, .15
+
+<MatchingType>
+    name: "matching-type"
+    BoxLayout:
+        orientation: "vertical"
+        padding: "2dp"
+        spacing: "5dp"
+        canvas:
+            Color:
+                rgba: 1,1,1,.8
+            Rectangle:
+                size: root.width, root.height
+        MATcanvas:
+            id: mat_canvas
+            MATLastTouch:
+                pos_hint: {"center_x": .5, "center_y": .1}
+            Image:
+                id: entry_img_1
+                source: ""
+                size_hint: .4, .19
+                pos_hint: {"x": .6, "center_y": .9}
+            MATBtnLetter:
+                text: "A"
+                pos_hint: {"right": .6, "center_y": .9}
+                answer: entry_img_1.source
+            Image:
+                id: entry_img_2
+                source: ""
+                size_hint: .4, .19
+                pos_hint: {"x": .6, "center_y": .7}
+            MATBtnLetter:
+                text: "B"
+                pos_hint: {"right": .6, "center_y": .7}
+                answer: entry_img_2.source
+            Image:
+                id: entry_img_3
+                source: ""
+                size_hint: .4, .19
+                pos_hint: {"x": .6, "center_y": .5}
+            MATBtnLetter:
+                text: "C"
+                pos_hint: {"right": .6, "center_y": .5}
+                answer: entry_img_3.source
+            Image:
+                id: entry_img_4
+                source: ""
+                size_hint: .4, .19
+                pos_hint: {"x": .6, "center_y": .3}
+            MATBtnLetter:
+                text: "D"
+                pos_hint: {"right": .6, "center_y": .3}
+                answer: entry_img_4.source
+            Image:
+                id: entry_img_5
+                source: ""
+                size_hint: .4, .19
+                pos_hint: {"x": .6, "center_y": .1}
+            MATBtnLetter:
+                text: "E"
+                pos_hint: {"right": .6, "center_y": .1}
+                answer: entry_img_5.source
+
+            MDLabel:
+                id: entry_name_1
+                text: ""
+                color: 0,0,0,1
+                size_hint: .3, .19
+                pos_hint: {"right": .3, "center_y": .9}
+            MATBtnNumber:
+                text: "1"
+                pos_hint: {"x": .3, "center_y": .9}
+                answer: entry_name_1.text
+            MDLabel:
+                id: entry_name_2
+                text: ""
+                color: 0,0,0,1
+                size_hint: .3, .19
+                pos_hint: {"right": .3, "center_y": .7}
+            MATBtnNumber:
+                text: "2"
+                pos_hint: {"x": .3, "center_y": .7}
+                answer: entry_name_2.text
+            MDLabel:
+                id: entry_name_3
+                text: ""
+                color: 0,0,0,1
+                size_hint: .3, .19
+                pos_hint: {"right": .3, "center_y": .5}
+            MATBtnNumber:
+                text: "3"
+                pos_hint: {"x": .3, "center_y": .5}
+                answer: entry_name_3.text
+            MDLabel:
+                id: entry_name_4
+                text: ""
+                color: 0,0,0,1
+                size_hint: .3, .19
+                pos_hint: {"right": .3, "center_y": .3}
+            MATBtnNumber:
+                text: "4"
+                pos_hint: {"x": .3, "center_y": .3}
+                answer: entry_name_4.text
+            MDLabel:
+                id: entry_name_5
+                text: ""
+                color: 0,0,0,1
+                size_hint: .3, .19
+                pos_hint: {"right": .3, "center_y": .1}
+            MATBtnNumber:
+                text: "5"
+                pos_hint: {"x": .3, "center_y": .1}
+                answer: entry_name_5.text
+        RelativeLayout:
+            id: check_btn
+            size_hint: 1, .1
+
+<BlankScreen>
+    name: "blank-screen"
 
 <FinalResult>
     name: "final-result"
     FloatLayout:
-        # size: 1,1
+        pos_hint: {"center_x": .5, "center_y": .60}
+        size_hint: None, .9
+        width: max(root.width*.7, self.height)
+        canvas:
+            Color:
+                rgba: 1,1,1,1
+            Rectangle:
+                size: self.size
+                pos: self.pos
+        BoxLayout:
+            orientation: "vertical"
+            pos: self.parent.pos
+            AnchorLayout:
+                anchor_x: "center"
+                anchor_y: "bottom"
+                BoxLayout:
+                    orientation: "vertical"
+                    size_hint: 1, .5
+                    Label:
+                        markup: True
+                        text: "[i]Congratulations![/i]"
+                        color: 0,0,0,1
+                        font_size: "24dp"
+                    Label:
+                        markup: True
+                        text: "You completed the quiz."
+                        color: 0,0,0,1
+                        font_size: "14dp"
+            AnchorLayout:
+                anchor_x: "center"
+                anchor_y: "center"
+                MDRaisedButton:
+                    text: "Back to Menu"
+                    adaptive_size: True
+                    on_release:
+                        root.manager.transition.direction = "right"
+                        root.manager.current = "menu"
+
+
+#LAYOUTS
+<ScoreBoard>
+    orientation: "horizontal"
+    Button:
+        text: "Back"
+        size_hint: .2, 1
+        pos_hint: {"x": 0}
+        on_release: root.parent.parent.parent.showPauseDialog()
+    BoxLayout:
+        orientation: "vertical"
+        padding: "5dp"
+        spacing: "5dp"
+        size_hint: .4, 1
+        pos_hint: {"right": .65}
+        canvas:
+            Color:
+                rgba: 1,1,1,.8
+            Rectangle:
+                size: self.size
+                pos: self.pos
+            Color:
+                rgba: 0,0,0,1
+            Line:
+                rectangle: (self.x,self.y,self.width, self.height)
+            Line:
+                points: (self.x, self.top*.66, self.right, self.top*.66)
         Label:
-            text: 'Congratulations!'
-            font_name: 'Mont'
-            font_size: 40
-            color: (0,0,0,1)
-            pos_hint: {"center_x": .5, "center_y": .6}
+            text: "Question"
+            color: 0,0,0,1
+            font_name: "Mont"
+            size_hint: 1, .33
         Label:
-            text: 'You finished the quiz.'
-            font_name: 'Mont'
-            font_size: 20
-            color: (0,0,0,1)
-            pos_hint: {"center_x": .5, "center_y": .5}
-        MDRectangleFlatButton:
-            text: 'Back to Menu'
-            pos_hint: {"center_x": .5, "center_y": .4}
-            on_release:
-                root.manager.parent.parent.manager.transition.direction = "right"
-                root.manager.parent.parent.manager.current = "menu" #for testing
+            id: question_num
+            text: ""
+            color: 0,0,0,1
+            font_size: 30
+    BoxLayout:
+        orientation: "vertical"
+        padding: "5dp"
+        spacing: "5dp"
+        size_hint: .3, 1
+        pos_hint: {"right": 1}
+        canvas:
+            Color:
+                rgba: 1,1,1,.8
+            Rectangle:
+                size: self.size
+                pos: self.pos
+            Color:
+                rgba: 0,0,0,1
+            Line:
+                rectangle: (self.x,self.y,self.width, self.height)
+            Line:
+                points: (self.x, self.top*.66, self.right, self.top*.66)
+        Label:
+            text: "Score"
+            color: 0,0,0,1
+            font_name: "Mont"
+            size_hint: 1, .33
+        Label:
+            id: score
+            text: "0"
+            color: 0,0,0,1
+            font_size: 30
+        
 
-
-
-# <QuizPage>:
-#     name: "Quiz"
-#     FloatLayout:
-#         id: content
-#         orientation: 'vertical'
-#         size_hint: (1, 1)
-#         bg: ""
-#         canvas:
-#             Rectangle:
-#                 size: root.width, root.height
-#                 source: self.bg
-#         MDCard:
-#             size_hint: .8, .4
-#             pos_hint: {'center_x': .5, 'y': .5}
-#             Image:
-#                 id: img_entry
-#                 source: ""
-#         Label:
-#             id: entry_name
-#             text: ""
-#             font_name: "Mont"
-#             font_size: 40
-#             color: .12, .12, .12
-#             center_y: .5
-#         MDGridLayout:
-#             id: choices
-#             cols: 0
-#             spacing: "10dp"
-#             adaptive_size: True
-#             pos_hint: {'center_x': .5, 'center_y': .25}
-
-#     FloatLayout:
-#         MDRectangleFlatButton:
-#             text: "Back"
-#             font_name: "Mont"
-#             theme_text_color: 'Custom'
-#             text_color: 0, 0, 0, 1
-#             size: (150, 90)
-#             pos_hint: {'y':0.90,'x':0.075}
-#             on_release:
-#                 root.clearProgress()
-#                 root.manager.current = root.manager.category_tracker[-1]
-#                 root.manager.transition.direction = "right"
+# DIALOGS/POPUPS
+<QuizPauseDialog>
+    auto_dismiss: False
+    size_hint: .7, .5
+    BoxLayout:
+        orientation: "vertical"
+        canvas:
+            Color:
+                rgba: 1,1,1,1
+            Rectangle:
+                size: root.size
+                pos: root.pos
+        Label:
+            text: "Quiz Paused"
+            font_name: "Mont"
+            font_size: "24dp"
+            color: 0,0,0,1
+        Button:
+            text: "Resume Quiz"
+            on_release: root.dismiss() 
+        Button:
+            id: exit_btn
+            text: "Exit Quiz"
+            on_release: root.dismiss()
+            
+<CheckResultDialog>
+    auto_dismiss: False
+    size_hint: .7, .5
+    BoxLayout:
+        orientation: "vertical"
+        canvas:
+            Color:
+                rgba: 1,1,1,1
+            Rectangle:
+                size: root.size
+                pos: root.pos
+        AnchorLayout:
+            anchor_x: "center"
+            anchor_y: "bottom"
+            Label:
+                id: result
+                markup: True
+                text: "[color=#000000]RESULT[/color]"
+                font_size: "24dp"
+                color: 0,0,0,1
+                size_hint: 1, .3
+        StackLayout:
+            anchor_x: "center"
+            anchor_y: "top"
+            Label:
+                id: description
+                markup: True
+                text: "+0 point"
+                # font_name: "Mont"
+                font_size: "14dp"
+                color: 0,0,0,1
+                size_hint: 1, .2
