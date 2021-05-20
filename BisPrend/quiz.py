@@ -597,10 +597,10 @@ class CheckResultDialog(MDDialog):
         self.dismiss()
 
     def delay(self):
-        t1 = time.clock()
+        t1 = time.time()
         t2 = t1 + 1.5
         while t1 <= t2:
-            t1 = time.clock()
+            t1 = time.time()
 
     def copyCurrentScreen(self, current_screen):
         self.current_screen = current_screen
