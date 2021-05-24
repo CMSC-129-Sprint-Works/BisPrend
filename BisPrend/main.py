@@ -19,6 +19,7 @@ from kivymd.uix.label import MDLabel
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.card import MDCard
 from kivymd.uix.button import MDRectangleFlatButton
+from kivymd.uix.dialog import MDDialog
 
 from kivy.clock import Clock
 from user import User
@@ -33,6 +34,30 @@ check = []
 for i in range(0,14):
     check.append(0)
 
+class sentenceButton(MDRectangleFlatButton):
+    def __init__(self,sampeng:str,sampbis:str):
+        super(sentenceButton,self).__init__()
+        self.__sampeng = sampeng
+        self.__sampbis = sampbis
+        self.text = "Sampol nga tudling-pulong\n(sample sentences)"
+        self.md_bg_color = [1,0.8,0.4,1]
+        self.theme_text_color = 'Custom'
+        self.text_color = [0,0,0,1]
+        self.font_name = "Mont"
+        self.size_hint = (0.3,0.7)
+        self.pos_hint = {'y': 0.9, 'x': 0.7}
+        
+    def on_release(self):
+        dialog = MDDialog(
+            title = "Sampol nga tudling-pulong\n(sample sentences)",
+            text = ("Bisaya : " + self.__sampbis +"\n" + "English: " + self.__sampeng),
+            size_hint = (0.4,0.3),
+            pos_hint = {"center_x": .5, "center_y": .5}
+        )
+        dialog.open()
+        pass 
+        
+
 def CarouselMaker(category:str,subcategory:str):
     conn = sqlite3.connect('Information.db')
     curs = conn.cursor()
@@ -45,8 +70,17 @@ def CarouselMaker(category:str,subcategory:str):
         sampbis = i[4]
         sampeng = i[5]
         image = Image(source=imagesrc)
-        card = MDCard(size_hint = (.4,.8),pos_hint = {"center_x": .5, "center_y": .5},)
+        card = MDCard(size_hint = (.4,.8),
+        pos_hint = {"center_x": .5, "center_y": .5}
+        )
+        floater = FloatLayout(size=(1,1),
+            pos_hint = {"center_x":.5,"center_y":.5}
+        )
+        sentenceButn = sentenceButton(sampeng,sampbis)
+        # floater.add_widget(sentenceButn)
+
         card.add_widget(image)
+        card.add_widget(sentenceButn)
         caros.add_widget(card)
 
     return caros
