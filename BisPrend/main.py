@@ -116,7 +116,7 @@ class KomidorPage(Screen):
         if check[2] != 1:
             caros = CarouselMaker("Balay","Komidor")
             self.add_widget(caros)
-            checl[2] = 1
+            check[2] = 1
     
     def on_enter(self):
         self.manager.updateTracker(self.name)
