@@ -1,47 +1,189 @@
 #:kivy 2.0.0
+#: import MDIconButton kivymd.uix.button.MDRectangleFlatButton
+#: import MDIconButton kivymd.uix.button.MDIconButton
+#:include quiz.kv
 
-<BisprendEngine>:
-    player: username
+PageManager:
+    RegPage:
+    MenuSelector:
+    CategoryPage:
+    SubcategoryPage:
+    # QuizPage:
+
+<RegPage>:
+    name: "Reg"
+
+    username: username #object
+    
     FloatLayout:
         orientation: 'vertical'
+        
         canvas:
             Rectangle:
-                size: root.width, root.height
-                source: 'bg-1.png'
-
+                pos: self.pos
+                size: self.size
+                source: "bg/bg-1.jpg"
+                
         Label:
-            font_size: 85
-            font_name: "Mont"
-            center_x: root.width / 2
-            top: root.top - 20
             text: "Pangalan"
+            font_size: 100
+            font_name: "Mont"
+            bold: True
+            color: 0.4,0.4,0.4
+            pos_hint: {'center_y': 0.75, 'center_x': 0.5}
             color: 0.12,0.12,0.12
 
         TextInput:
+            text: "Name"
             multiline: False
+            focus: False
             id: username
             font_size: 30
             font_name: "Mont"
-            size_hint: (4.5,0.5)
-            center_x: root.width / 2
-            top: root.top - 150
+            size_hint: (0.4, 0.15)
+            pos_hint: {'center_y': 0.55, 'center_x': 0.5}
 
 
-        Button:
-            background_color: 0,0,0
-            text: "Confirm"
-            color: 1,1,1
+        MDRectangleFlatButton:
+            text: "Ok"
+            md_bg_color: [1,0.8,0.4,1]
+            theme_text_color: 'Custom'
+            text_color: [0,0,0,1]
             font_size: 30
             font_name: "Mont"
-            size_hint: (4.5,0.5)
-            center_x: root.width / 2
-            top: root.top - 210
-            text: "Ok"
-            color: 1,1,1
-            on_release: root.btn()
+            font_bold: True
+            size_hint: (0.2,0.1)
+            pos_hint: {'center_y': 0.35, 'center_x': 0.5}
+            on_release:
+                root.registerUser()
+                app.root.current = "Selector"
+                root.manager.transition.direction = "left"
 
-<BisprendPopup>:
-    Label:
-        text: "Welcome!"
-        size_hint: 0.6, 0.8
-        pos_hint: {"x": 0.2, "top": 1}
+<MenuSelector>:
+    name: "Selector"
+    FloatLayout:
+        canvas:
+            Rectangle:
+                size: root.width, root.height
+                source: "bg/default-bg.jpg"
+
+        Label:
+            text: "Welcome, " + root.playername()
+            font_name: "Mont"
+            font_size: 40
+            pos_hint: {'center_y': 0.85, 'center_x': 0.5}
+            #center_x: root.width / 2
+            #top: root.top - 20
+            color: 0.12,0.12,0.12
+
+        MDRectangleFlatButton:
+            text: "Balay (Home)"
+            cat_name: "Balay"
+            md_bg_color: [1,0.8,0.4,1]
+            theme_text_color: 'Custom'
+            text_color: [0,0,0,1]
+            font_size: 20
+            font_name: "Mont"
+            size_hint: (0.45,0.1)
+            pos_hint: {'center_y': 0.65, 'center_x': 0.5}
+            on_release:
+                root.manager.updateTracker(self.cat_name)
+                root.manager.current = "Category"
+                root.manager.transition.direction = "left"
+                
+        MDRectangleFlatButton:
+            text: "Skwelahan (School)"
+            cat_name: "Skuylahan"
+            md_bg_color: [1,0.8,0.4,1]
+            theme_text_color: 'Custom'
+            text_color: [0,0,0,1]
+            font_size: 20
+            font_name: "Mont"
+            size_hint: (0.45,0.1)
+            pos_hint: {'center_y': 0.50, 'center_x': 0.5}
+            on_release:
+                root.manager.updateTracker(self.cat_name)
+                root.manager.current = "Category"
+                root.manager.transition.direction = "left"
+
+        MDRectangleFlatButton:
+            text: "Tindahan (Store)"
+            cat_name: "Tindahan"
+            md_bg_color: [1,0.8,0.4,1]
+            theme_text_color: 'Custom'
+            text_color: [0,0,0,1]
+            font_size: 20
+            font_name: "Mont"
+            size_hint: (0.45,0.1)
+            pos_hint: {'center_y': 0.35, 'center_x': 0.5}
+            on_release:
+                root.manager.updateTracker(self.cat_name)
+                root.manager.current = "Category"
+                root.manager.transition.direction = "left"
+
+
+<CategoryPage>
+    name: "Category"
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            size_hint: 1, None
+            height: "50dp"
+            padding: "10dp"
+            MDRectangleFlatButton:
+                text: "Back"
+                md_bg_color:[1,0.8,0.4,1]
+                theme_text_color:'Custom'
+                text_color: [0,0,0,1]
+                font_name: "Mont"
+                size_hint: None, None
+                size: "100dp", "50dp"
+                on_release:
+                    root.on_back_pressed()
+                    root.manager.current = "Selector"
+                    root.manager.transition.direction = "right"
+        BoxLayout:
+            ScrollView:
+                id: subcat_btns_scrollview
+                do_scroll_x: False
+                bg: ""
+                canvas.before:
+                    Rectangle:
+                        size: self.width, self.height
+                        source: self.bg
+                StackLayout:
+                    pos_hint: {"center_x": .5}
+                    id: subcat_btns_container
+                    size_hint_y: None
+                    height: self.minimum_height
+                    orientation: "lr-tb"
+                    spacing: "10dp"
+
+
+<SubcategoryPage>
+    name: "Subcategory"
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            size_hint: 1, None
+            height: "50dp"
+            padding: "10dp"
+            MDRectangleFlatButton:
+                text: "Back"
+                md_bg_color:[1,0.8,0.4,1]
+                theme_text_color:'Custom'
+                text_color: [0,0,0,1]
+                font_name: "Mont"
+                size_hint: None, None
+                size: "100dp", "50dp"
+                on_release:
+                    root.on_back_pressed()
+                    root.manager.current = "Category"
+                    root.manager.transition.direction = "right"
+        BoxLayout:
+            id: carousel_container
+            bg: ""
+            canvas:
+                Rectangle:
+                    size: self.width, self.height
+                    source: self.bg
