@@ -6,27 +6,9 @@
 PageManager:
     RegPage:
     MenuSelector:
+    CategoryPage:
+    SubcategoryPage:
     # QuizPage:
-
-    BalayPage:
-    PamilyaPage:
-    ResibidorPage:
-    KomidorPage:
-    Kan_ananPage:
-    KasilyasPage:
-    KatulgananPage:
-
-    SkuylahanPage:
-    ClassroomPage:
-    NumeroPage:
-    ClinicPage:
-    LibPage:
-    CanteenPage:
-
-    TindahanPage:
-    PagkaonPage:
-    SaninaPage:
-    KwartaPage:
 
 <RegPage>:
     name: "Reg"
@@ -96,6 +78,7 @@ PageManager:
 
         MDRectangleFlatButton:
             text: "Balay (Home)"
+            cat_name: "Balay"
             md_bg_color: [1,0.8,0.4,1]
             theme_text_color: 'Custom'
             text_color: [0,0,0,1]
@@ -103,12 +86,14 @@ PageManager:
             font_name: "Mont"
             size_hint: (0.45,0.1)
             pos_hint: {'center_y': 0.65, 'center_x': 0.5}
-            on_release: 
-                app.root.current = "Balay"
+            on_release:
+                root.manager.updateTracker(self.cat_name)
+                root.manager.current = "Category"
                 root.manager.transition.direction = "left"
-
+                
         MDRectangleFlatButton:
             text: "Skwelahan (School)"
+            cat_name: "Skuylahan"
             md_bg_color: [1,0.8,0.4,1]
             theme_text_color: 'Custom'
             text_color: [0,0,0,1]
@@ -116,12 +101,14 @@ PageManager:
             font_name: "Mont"
             size_hint: (0.45,0.1)
             pos_hint: {'center_y': 0.50, 'center_x': 0.5}
-            on_release: 
-                app.root.current = "Skuylahan"
+            on_release:
+                root.manager.updateTracker(self.cat_name)
+                root.manager.current = "Category"
                 root.manager.transition.direction = "left"
 
         MDRectangleFlatButton:
             text: "Tindahan (Store)"
+            cat_name: "Tindahan"
             md_bg_color: [1,0.8,0.4,1]
             theme_text_color: 'Custom'
             text_color: [0,0,0,1]
@@ -129,1075 +116,74 @@ PageManager:
             font_name: "Mont"
             size_hint: (0.45,0.1)
             pos_hint: {'center_y': 0.35, 'center_x': 0.5}
-            on_release: 
-                app.root.current = "Tindahan"
+            on_release:
+                root.manager.updateTracker(self.cat_name)
+                root.manager.current = "Category"
                 root.manager.transition.direction = "left"
 
-<BalayPage>:
-    name: "Balay"
-    FloatLayout:
+
+<CategoryPage>
+    name: "Category"
+    BoxLayout:
         orientation: 'vertical'
-        canvas:
-            Rectangle:
-                pos: self.pos
-                size: self.size
-                source: "balay/balay-bg.jpg"
-           
-        MDRectangleFlatButton:
-            text: "Back"
-            md_bg_color:[1,0.8,0.4,1]
-            theme_text_color:'Custom'
-            text_color: [0,0,0,1]
-            font_name: "Mont"
-            size_hint: (0.1,0.05)
-            pos_hint:{'y': 0.90, 'x': 0.05}
-            on_release:
-                app.root.current = "Selector"
-                root.manager.transition.direction = "right"
-        
-        MDIconButton:
-            icon: "balay/buttons/pamilya.jpg"
-            user_font_size: "180sp"
-            pos_hint: {'y':0.50,'x':0.05}
-            on_release: 
-                app.root.current = "Pamilya-Timbaya"
-                root.manager.transition.direction = "left"
-        
-        MDIconButton:
-            icon: "balay/buttons/sala.jpg"
-            user_font_size: "180sp"
-            pos_hint: {'y':0.50,'x':0.35}
-            on_release: 
-                app.root.current = "Resibidor"
-                root.manager.transition.direction = "left"
+        BoxLayout:
+            size_hint: 1, None
+            height: "50dp"
+            padding: "10dp"
+            MDRectangleFlatButton:
+                text: "Back"
+                md_bg_color:[1,0.8,0.4,1]
+                theme_text_color:'Custom'
+                text_color: [0,0,0,1]
+                font_name: "Mont"
+                size_hint: None, None
+                size: "100dp", "50dp"
+                on_release:
+                    root.on_back_pressed()
+                    root.manager.current = "Selector"
+                    root.manager.transition.direction = "right"
+        BoxLayout:
+            ScrollView:
+                id: subcat_btns_scrollview
+                do_scroll_x: False
+                bg: ""
+                canvas.before:
+                    Rectangle:
+                        size: self.width, self.height
+                        source: self.bg
+                StackLayout:
+                    pos_hint: {"center_x": .5}
+                    id: subcat_btns_container
+                    size_hint_y: None
+                    height: self.minimum_height
+                    orientation: "lr-tb"
+                    spacing: "10dp"
 
-        MDIconButton:
-            icon: "balay/buttons/komidor.jpg"
-            user_font_size: "180sp"
-            pos_hint: {'y':0.50,'x':0.65}
-            on_release:
-                app.root.current = "Komidor"
-                root.manager.transition.direction = "left"
-        
-        MDIconButton:
-            icon: "balay/buttons/kan-anan.jpg"
-            user_font_size: "180sp"
-            pos_hint: {'y':0.10,'x':0.05}
-            on_release: 
-                app.root.current = "Kan-anan"
-                root.manager.transition.direction = "left"
-        
-        MDIconButton:
-            icon: "balay/buttons/kasilyas.jpg"
-            user_font_size: "180sp"
-            pos_hint: {'y':0.10,'x':0.35}
-            on_release: 
-                app.root.current = "Kasilyas"
-                root.manager.transition.direction = "left"
-        
-        MDIconButton:
-            icon: "balay/buttons/katogan.jpg"
-            user_font_size: "180sp"
-            pos_hint: {'y':0.10,'x':0.65}
-            on_release:
-                app.root.current = "Katulganan"
-                root.manager.transition.direction = "left"
-        
 
-<PamilyaPage>:
-    name: "Pamilya-Timbaya"
-    FloatLayout:
+<SubcategoryPage>
+    name: "Subcategory"
+    BoxLayout:
         orientation: 'vertical'
-
-    Carousel:
-        direction: "right"
-        canvas:
-            Rectangle:
-                size: root.width, root.height
-                source: "balay/balay-bg.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/pamilya-timbaya/pamilya.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/pamilya-timbaya/mama.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/pamilya-timbaya/papa.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/pamilya-timbaya/igsoon.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/pamilya-timbaya/ate.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/pamilya-timbaya/kuya.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/pamilya-timbaya/manghud.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/pamilya-timbaya/buntag.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/pamilya-timbaya/udto.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/pamilya-timbaya/hapon.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/pamilya-timbaya/gabii.jpg"
-
-    FloatLayout:
-        MDRectangleFlatButton:
-            text: "Back"
-            md_bg_color:[1,0.8,0.4,1]
-            theme_text_color: 'Custom'
-            text_color: [0,0,0,1]
-            font_name: "Mont"
-            size_hint: (0.1,0.05)
-            pos_hint:{'y': 0.90, 'x': 0.075}
-            on_release:
-                root.manager.category_tracker.pop()
-                app.root.current = "Balay"
-                root.manager.transition.direction = "right"
-
-<ResibidorPage>:
-    name: "Resibidor"
-    FloatLayout:
-        orientation: 'vertical'
-    Carousel:
-        direction: "right"
-        canvas:
-            Rectangle:
-                size: root.width, root.height
-                source: "balay/balay-bg.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/resibidor/sala.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/resibidor/sopa.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/resibidor/lamesita.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/resibidor/plurita.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/resibidor/tv.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/resibidor/bintana.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/resibidor/kurtina.jpg"
-    FloatLayout:
-        MDRectangleFlatButton:
-            text: "Back"
-            md_bg_color:[1,0.8,0.4,1]
-            theme_text_color: 'Custom'
-            text_color: [0,0,0,1]
-            font_name: "Mont"
-            size_hint: (0.1,0.05)
-            pos_hint:{'y': 0.90, 'x': 0.075}
-            on_release:
-                root.manager.category_tracker.pop()
-                app.root.current = "Balay"
-                root.manager.transition.direction = "right"
-<KomidorPage>:
-    name: "Komidor"
-    FloatLayout:
-        orientation: 'vertical'
-    Carousel:
-        direction: "right"
-        canvas:
-            Rectangle:
-                size: root.width, root.height
-                source: "balay/balay-bg.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/komidor/kusina.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/komidor/luwag.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/komidor/kaha.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/komidor/chop.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/komidor/stove.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/komidor/ref.jpg"
-    FloatLayout:
-        MDRectangleFlatButton:
-            text: "Back"
-            md_bg_color:[1,0.8,0.4,1]
-            theme_text_color: 'Custom'
-            text_color: [0,0,0,1]
-            font_name: "Mont"
-            size_hint: (0.1,0.05)
-            pos_hint:{'y': 0.90, 'x': 0.075}
-            on_release:
-                root.manager.category_tracker.pop()
-                app.root.current = "Balay"
-                root.manager.transition.direction = "right"
-<Kan_ananPage>:
-    name: "Kan-anan"
-    FloatLayout:
-        orientation: 'vertical'
-    Carousel:
-        direction: "right"
-        canvas:
-            Rectangle:
-                size: root.width, root.height
-                source: "balay/balay-bg.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/kan-anan/kan-anan.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/kan-anan/lamesa.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/kan-anan/chair.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/kan-anan/plato.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/kan-anan/kutsara.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/kan-anan/fork.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/kan-anan/baso.jpg"
-    FloatLayout:
-        MDRectangleFlatButton:
-            text: "Back"
-            md_bg_color:[1,0.8,0.4,1]
-            theme_text_color: 'Custom'
-            text_color: [0,0,0,1]
-            font_name: "Mont"
-            size_hint: (0.1,0.05)
-            pos_hint:{'y': 0.90, 'x': 0.075}
-            on_release:
-                root.manager.category_tracker.pop()
-                app.root.current = "Balay"
-                root.manager.transition.direction = "right"
-
-<KasilyasPage>:
-    name: "Kasilyas"
-    FloatLayout:
-        orientation: 'vertical'
-        
-    Carousel:
-        direction: "right"
-        canvas:
-            Rectangle:
-                size: root.width, root.height
-                source: "balay/balay-bg.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/kasilyas/kasilyas.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/kasilyas/baldi.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/kasilyas/kabo.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/kasilyas/inidoro.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/kasilyas/sabon.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/kasilyas/sepilyo.jpg"
-    FloatLayout:
-        MDRectangleFlatButton:
-            text: "Back"
-            md_bg_color:[1,0.8,0.4,1]
-            theme_text_color: 'Custom'
-            text_color: [0,0,0,1]
-            font_name: "Mont"
-            size_hint: (0.1,0.05)
-            pos_hint:{'y': 0.90, 'x': 0.075}
-            on_release:
-                root.manager.category_tracker.pop()
-                app.root.current = "Balay"
-                root.manager.transition.direction = "right"
-
-<KatulgananPage>:
-    name: "Katulganan"
-    FloatLayout:
-        orientation: 'vertical'
-
-    Carousel:
-        direction: "right"
-        canvas:
-            Rectangle:
-                size: root.width, root.height
-                source: "balay/balay-bg.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/katulganan/katulganan.jpg"
-
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/katulganan/katre.jpg"
-        
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/katulganan/unlan.jpg"
-        
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/katulganan/habol.jpg"
-
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/katulganan/kabinet.jpg"
-
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "balay/katulganan/lampara.jpg"
-    FloatLayout:
-        MDRectangleFlatButton:
-            text: "Back"
-            md_bg_color:[1,0.8,0.4,1]
-            theme_text_color: 'Custom'
-            text_color: [0,0,0,1]
-            font_name: "Mont"
-            size_hint: (0.1,0.05)
-            pos_hint:{'y': 0.90, 'x': 0.075}
-            on_release:
-                root.manager.category_tracker.pop()
-                app.root.current = "Balay"
-                root.manager.transition.direction = "right"
-
-<SkuylahanPage>:
-    name: "Skuylahan"
-    FloatLayout:
-        orientation: 'vertical'
-        canvas:
-            Rectangle:
-                pos: self.pos
-                size: self.size
-                source: "skuylahan/school-bg.jpg"
-           
-        MDRectangleFlatButton:
-            text: "Back"
-            md_bg_color:[1,0.8,0.4,1]
-            theme_text_color:'Custom'
-            text_color: [0,0,0,1]
-            font_name: "Mont"
-            size_hint: (0.1,0.05)
-            pos_hint:{'y': 0.90, 'x': 0.05}
-            on_release:
-                app.root.current = "Selector"
-                root.manager.transition.direction = "right"
-        
-        MDIconButton:
-            icon: "skuylahan/buttons/room.jpg"
-            user_font_size: "180sp"
-            pos_hint: {'y':0.50,'x':0.05}
-            on_release: 
-                app.root.current = "Classroom"
-                root.manager.transition.direction = "left"
-        
-        MDIconButton:
-            icon: "skuylahan/buttons/lib.jpg"
-            user_font_size: "180sp"
-            pos_hint: {'y':0.50,'x':0.35}
-            on_release: 
-                app.root.current = "Library"
-                root.manager.transition.direction = "left"
-
-        MDIconButton:
-            icon: "skuylahan/buttons/clinic.jpg"
-            user_font_size: "180sp"
-            pos_hint: {'y':0.50,'x':0.65}
-            on_release: 
-                app.root.current = "Clinic"
-                root.manager.transition.direction = "left"
-        
-        MDIconButton:
-            icon: "skuylahan/buttons/canteen.jpg"
-            user_font_size: "180sp"
-            pos_hint: {'y':0.10,'x':0.20}
-            on_release: 
-                app.root.current = "Canteen"
-                root.manager.transition.direction = "left"
-        
-        MDIconButton:
-            icon: "skuylahan/buttons/numero.jpg"
-            user_font_size: "180sp"
-            pos_hint: {'y':0.10,'x':0.50}
-            on_release: 
-                app.root.current = "Numero"
-                root.manager.transition.direction = "left"
-
-<ClassroomPage>:
-    name: "Classroom"
-    FloatLayout:
-        orientation: 'vertical'
-
-    Carousel:
-        direction: "right"
-        canvas:
-            Rectangle:
-                size: root.width, root.height
-                source: "skuylahan/school-bg.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/room/student.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/room/teacher.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/room/lapis.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/room/borador.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/room/papel.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/room/notebook.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/room/chair.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/room/desk.jpg"
-    FloatLayout:
-        MDRectangleFlatButton:
-            text: "Back"
-            md_bg_color:[1,0.8,0.4,1]
-            theme_text_color: 'Custom'
-            text_color: [0,0,0,1]
-            font_name: "Mont"
-            size_hint: (0.1,0.05)
-            pos_hint:{'y': 0.90, 'x': 0.075}
-            on_release:
-                root.manager.category_tracker.pop()
-                app.root.current = "Skuylahan"
-                root.manager.transition.direction = "right"
-
-<LibPage>:
-    name: "Library"
-    FloatLayout:
-        orientation: 'vertical'
-
-    Carousel:
-        direction: "right"
-        canvas:
-            Rectangle:
-                size: root.width, root.height
-                source: "skuylahan/school-bg.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/library/lib.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/library/shelf.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/library/libro.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/library/dictionary.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/library/ency.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/library/news.jpg"
-    FloatLayout:
-        MDRectangleFlatButton:
-            text: "Back"
-            md_bg_color:[1,0.8,0.4,1]
-            theme_text_color: 'Custom'
-            text_color: [0,0,0,1]
-            font_name: "Mont"
-            size_hint: (0.1,0.05)
-            pos_hint:{'y': 0.90, 'x': 0.075}
-            on_release:
-                root.manager.category_tracker.pop()
-                app.root.current = "Skuylahan"
-                root.manager.transition.direction = "right"
-<ClinicPage>:
-    name: "Clinic"
-    FloatLayout:
-        orientation: 'vertical'
-
-    Carousel:
-        direction: "right"
-        canvas:
-            Rectangle:
-                size: root.width, root.height
-                source: "skuylahan/school-bg.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/clinic/tambalanan.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/clinic/alcohol.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/clinic/bandaid.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/clinic/bendahe.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/clinic/tambal.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/clinic/timbang.jpg"
-    FloatLayout:
-        MDRectangleFlatButton:
-            text: "Back"
-            md_bg_color:[1,0.8,0.4,1]
-            theme_text_color: 'Custom'
-            text_color: [0,0,0,1]
-            font_name: "Mont"
-            size_hint: (0.1,0.05)
-            pos_hint:{'y': 0.90, 'x': 0.075}
-            on_release:
-                root.manager.category_tracker.pop()
-                app.root.current = "Skuylahan"
-                root.manager.transition.direction = "right"
-
-<CanteenPage>:
-    name: "Canteen"
-    FloatLayout:
-        orientation: 'vertical'
-
-    Carousel:
-        direction: "right"
-        canvas:
-            Rectangle:
-                size: root.width, root.height
-                source: "skuylahan/school-bg.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/canteen/kantina.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/canteen/sud-an.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/canteen/kan-on.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/canteen/biskwit.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/canteen/sitsiriya.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/canteen/tubig.jpg"
-    FloatLayout:
-        MDRectangleFlatButton:
-            text: "Back"
-            md_bg_color:[1,0.8,0.4,1]
-            theme_text_color: 'Custom'
-            text_color: [0,0,0,1]
-            font_name: "Mont"
-            size_hint: (0.1,0.05)
-            pos_hint:{'y': 0.90, 'x': 0.075}
-            on_release:
-                root.manager.category_tracker.pop()
-                app.root.current = "Skuylahan"
-                root.manager.transition.direction = "right"
-
-
-<NumeroPage>:
-    name: "Numero"
-    FloatLayout:
-        orientation: 'vertical'
-
-    Carousel:
-        direction: "right"
-        canvas:
-            Rectangle:
-                size: root.width, root.height
-                source: "skuylahan/school-bg.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/numero/1.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/numero/2.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/numero/3.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/numero/4.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/numero/5.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/numero/6.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/numero/7.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/numero/8.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/numero/9.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "skuylahan/numero/10.jpg"
-    FloatLayout:
-        MDRectangleFlatButton:
-            text: "Back"
-            md_bg_color:[1,0.8,0.4,1]
-            theme_text_color: 'Custom'
-            text_color: [0,0,0,1]
-            font_name: "Mont"
-            size_hint: (0.1,0.05)
-            pos_hint:{'y': 0.90, 'x': 0.075}
-            on_release:
-                root.manager.category_tracker.pop()
-                app.root.current = "Skuylahan"
-                root.manager.transition.direction = "right"
-
-<TindahanPage>:
-    name: "Tindahan"
-    FloatLayout:
-        orientation: 'vertical'
-        canvas:
-            Rectangle:
-                pos: self.pos
-                size: self.size
-                source: "tindahan/tindahan-bg.jpg"
-           
-        MDRectangleFlatButton:
-            text: "Back"
-            md_bg_color:[1,0.8,0.4,1]
-            theme_text_color:'Custom'
-            text_color: [0,0,0,1]
-            font_name: "Mont"
-            size_hint: (0.1,0.05)
-            pos_hint:{'y': 0.90, 'x': 0.05}
-            on_release:
-                app.root.current = "Selector"
-                root.manager.transition.direction = "right"
-        
-        MDIconButton:
-            icon: "tindahan/buttons/pagkaon.jpg"
-            user_font_size: "180sp"
-            pos_hint: {'y':0.50,'x':0.05}
-            on_release: 
-                app.root.current = "Pagkaon"
-                root.manager.transition.direction = "left"
-        
-        MDIconButton:
-            icon: "tindahan/buttons/sanina.jpg"
-            user_font_size: "180sp"
-            pos_hint: {'y':0.50,'x':0.35}
-            on_release: 
-                app.root.current = "Sanina"
-                root.manager.transition.direction = "left"
-
-        MDIconButton:
-            icon: "tindahan/buttons/kuwarta.jpg"
-            user_font_size: "180sp"
-            pos_hint: {'y':0.50,'x':0.65}
-            on_release: 
-                app.root.current = "Kwarta"
-                root.manager.transition.direction = "left"
-<PagkaonPage>:
-    name: "Pagkaon"
-    FloatLayout:
-        orientation: 'vertical'
-
-    Carousel:
-        direction: "right"
-        canvas:
-            Rectangle:
-                size: root.width, root.height
-                source: "tindahan/tindahan-bg.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/pagkaon/pagkaon.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/pagkaon/itlog.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/pagkaon/manok.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/pagkaon/baboy.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/pagkaon/baka.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/pagkaon/isda.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/pagkaon/utanon.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/pagkaon/prutas.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/pagkaon/bugas.jpg"
-
-    FloatLayout:
-        MDRectangleFlatButton:
-            text: "Back"
-            md_bg_color:[1,0.8,0.4,1]
-            theme_text_color: 'Custom'
-            text_color: [0,0,0,1]
-            font_name: "Mont"
-            size_hint: (0.1,0.05)
-            pos_hint:{'y': 0.90, 'x': 0.075}
-            on_release:
-                root.manager.category_tracker.pop()
-                app.root.current = "Tindahan"
-                root.manager.transition.direction = "right"
-<SaninaPage>:
-    name: "Sanina"
-    FloatLayout:
-        orientation: 'vertical'
-
-    Carousel:
-        direction: "right"
-        canvas:
-            Rectangle:
-                size: root.width, root.height
-                source: "tindahan/tindahan-bg.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/sanina/sanina.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/sanina/blusa.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/sanina/kamisolin.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/sanina/kalsunis.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/sanina/palda.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/sanina/sapatos.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/sanina/Tsinelas.jpg"
-    FloatLayout:
-        MDRectangleFlatButton:
-            text: "Back"
-            md_bg_color:[1,0.8,0.4,1]
-            theme_text_color: 'Custom'
-            text_color: [0,0,0,1]
-            font_name: "Mont"
-            size_hint: (0.1,0.05)
-            pos_hint:{'y': 0.90, 'x': 0.075}
-            on_release:
-                root.manager.category_tracker.pop()
-                app.root.current = "Tindahan"
-                root.manager.transition.direction = "right"
-<KwartaPage>:
-    name: "Kwarta"
-    FloatLayout:
-        orientation: 'vertical'
-
-    Carousel:
-        direction: "right"
-        canvas:
-            Rectangle:
-                size: root.width, root.height
-                source: "tindahan/tindahan-bg.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/kwarta/kuwarta.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/kwarta/pitaka.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/kwarta/sensilyo.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/kwarta/centavos.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/kwarta/piso.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/kwarta/singko.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/kwarta/diyes.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/kwarta/baynte.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/kwarta/50.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/kwarta/100.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/kwarta/200.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/kwarta/500.jpg"
-    #     MDCard:
-    #         size_hint: .4,.8
-    #         pos_hint: {"center_x": .5, "center_y": .5}
-    #         AsyncImage:
-    #             source: "tindahan/kwarta/1k.jpg"
-
-    FloatLayout:
-        MDRectangleFlatButton:
-            text: "Back"
-            md_bg_color:[1,0.8,0.4,1]
-            theme_text_color: 'Custom'
-            text_color: [0,0,0,1]
-            font_name: "Mont"
-            size_hint: (0.1,0.05)
-            pos_hint:{'y': 0.90, 'x': 0.075}
-            on_release:
-                root.manager.category_tracker.pop()
-                app.root.current = "Tindahan"
-                root.manager.transition.direction = "right"
+        BoxLayout:
+            size_hint: 1, None
+            height: "50dp"
+            padding: "10dp"
+            MDRectangleFlatButton:
+                text: "Back"
+                md_bg_color:[1,0.8,0.4,1]
+                theme_text_color:'Custom'
+                text_color: [0,0,0,1]
+                font_name: "Mont"
+                size_hint: None, None
+                size: "100dp", "50dp"
+                on_release:
+                    root.on_back_pressed()
+                    root.manager.current = "Category"
+                    root.manager.transition.direction = "right"
+        BoxLayout:
+            id: carousel_container
+            bg: ""
+            canvas:
+                Rectangle:
+                    size: self.width, self.height
+                    source: self.bg

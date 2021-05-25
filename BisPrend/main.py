@@ -4,86 +4,36 @@ from kivy.lang import Builder
 from kivy.core.text import LabelBase
 #from kivy.properties import ObjectProperty
 from kivy.config import Config
+from kivy.uix.carousel import Carousel
+from kivy.uix.image import Image
 
 #kivy uix
+from kivy.uix.button import Button
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.uix.carousel import Carousel
-from kivy.uix.image import Image
-from kivy.graphics.instructions import Canvas
-
+from kivy.uix.stacklayout import StackLayout
+from kivy.uix.relativelayout import RelativeLayout
 
 #kivymd
 from kivymd.uix.label import MDLabel
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.card import MDCard
-from kivymd.uix.button import MDRectangleFlatButton
+from kivymd.uix.button import MDIconButton
 from kivymd.uix.dialog import MDDialog
 
 from kivy.clock import Clock
 from user import User
-import sqlite3
 # import quiz
+import os
+import math
+import sqlite3
+
 
 Config.set('graphics', 'resizable', True)
 
 newPlayer = User() #global scope (for testing)
 
-check = []
-for i in range(0,14):
-    check.append(0)
-
-class sentenceButton(MDRectangleFlatButton):
-    def __init__(self,sampeng:str,sampbis:str):
-        super(sentenceButton,self).__init__()
-        self.__sampeng = sampeng
-        self.__sampbis = sampbis
-        self.text = "Sampol nga tudling-pulong\n(sample sentences)"
-        self.md_bg_color = [1,0.8,0.4,1]
-        self.theme_text_color = 'Custom'
-        self.text_color = [0,0,0,1]
-        self.font_name = "Mont"
-        self.size_hint = (0.3,0.7)
-        self.pos_hint = {'y': 0.9, 'x': 0.7}
-        
-    def on_release(self):
-        dialog = MDDialog(
-            title = "Sampol nga tudling-pulong\n(sample sentences)",
-            text = ("Bisaya : " + self.__sampbis +"\n" + "English: " + self.__sampeng),
-            size_hint = (0.4,0.3),
-            pos_hint = {"center_x": .5, "center_y": .5}
-        )
-        dialog.open()
-        pass 
-        
-
-def CarouselMaker(category:str,subcategory:str):
-    conn = sqlite3.connect('Information.db')
-    curs = conn.cursor()
-    curs.execute("SELECT * FROM Information WHERE Category = \"" + category + "\" AND Subcategory = \"" + subcategory +"\"")
-    listofall = curs.fetchall()
-
-    caros = Carousel(direction = "right",size_hint=(1,.91))
-    for i in listofall:
-        imagesrc = i[3]
-        sampbis = i[4]
-        sampeng = i[5]
-        image = Image(source=imagesrc)
-        card = MDCard(size_hint = (.4,.8),
-        pos_hint = {"center_x": .5, "center_y": .5}
-        )
-        floater = FloatLayout(size=(1,1),
-            pos_hint = {"center_x":.5,"center_y":.5}
-        )
-        sentenceButn = sentenceButton(sampeng,sampbis)
-        # floater.add_widget(sentenceButn)
-
-        card.add_widget(image)
-        card.add_widget(sentenceButn)
-        caros.add_widget(card)
-
-    return caros
 
 #Screens
 class PageManager(ScreenManager):
@@ -94,10 +44,10 @@ class PageManager(ScreenManager):
         '''
         if category not in self.category_tracker:
             self.category_tracker.append(category)
-        print("Tracker: " + str(self.category_tracker))
+            print("Tracker: " + str(self.category_tracker))
 
-class RegPage(Screen):
-    
+
+class RegPage(Screen):    
     def on_enter(self):
         Clock.schedule_once(self.skip)
 
@@ -109,6 +59,7 @@ class RegPage(Screen):
         if(not newPlayer.hasUser()):
             self.manager.current = 'Selector'
 
+
 class MenuSelector(Screen):
     def on_enter(self):
         self.manager.category_tracker = [] #reset the tracker to empty
@@ -117,165 +68,113 @@ class MenuSelector(Screen):
     def playername(self):
         return newPlayer.getName()
 
-#Balay and subcategories
-class BalayPage(Screen):
-    def on_enter(self):
-        self.manager.updateTracker(self.name)
 
-class PamilyaPage(Screen):
-    def on_pre_enter(self):
-        if check[0] != 1:
-            caros = CarouselMaker("Balay","Pamilya")
-            self.add_widget(caros)
-            check[0] = 1
+class CategoryPage(Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.bind(size = self.on_size_change)
+    
+    def on_size_change(self, *args):
+        num_btns = math.floor(self.width/210)
+        if num_btns:
+            rem_space = self.width - (num_btns*210)
+            self.ids.subcat_btns_container.padding = rem_space/2, "10dp"
+
+    def on_pre_enter(self, *args):
+        self.cat_name = self.manager.category_tracker[0]
+        self.cat_location = os.getcwd() + "/" + self.cat_name
+        self.subcategories_list = [f.name for f in os.scandir(self.cat_location) if f.is_dir()]
+        self.subcategories_list.remove("buttons")
+        # set background
+        self.ids.subcat_btns_scrollview.bg = "{}/{}-bg.jpg".format(self.cat_name, self.cat_name)
 
     def on_enter(self):
-        self.manager.updateTracker(self.name)
+        # load subcategory buttons
+        if not self.ids.subcat_btns_container.children:
+            for subcat in self.subcategories_list:
+                btn_img_loc = "{}/buttons/{}.jpg".format(self.cat_location, subcat)
+                self.ids.subcat_btns_container.add_widget(SubcategoryButton(subcat_name = subcat, icon = btn_img_loc, on_release = self.on_subcat_btn_pressed))
+
+    def on_subcat_btn_pressed(self, subcat_btn_instance):
+        self.manager.updateTracker(subcat_btn_instance.subcat_name)
+        self.manager.transition.direction = "left"
+        self.manager.current = "Subcategory"
+
+    def on_back_pressed(self):
+        # clear subcategory buttons
+        self.ids.subcat_btns_container.clear_widgets()
 
     def on_leave(self):
-        print("yawa")
+        # clear subcategory buttons
+        # self.ids.subcat_btns_container.clear_widgets()
+        pass
 
-class ResibidorPage (Screen):
+
+class SubcategoryPage(Screen):
+    subcategories = {}
     def on_pre_enter(self):
-        if check[1] != 1:
-            caros = CarouselMaker("Balay","Resibidor")
-            self.add_widget(caros)
-            check[1] = 1
+        self.cat = self.manager.category_tracker[0]
+        self.subcat = self.manager.category_tracker[1].capitalize()
+        if self.subcat not in self.subcategories.keys():
+            self.subcategories[self.subcat] = self.CarouselMaker(self.cat, self.subcat)
 
-    def on_enter(self):
-        self.manager.updateTracker(self.name)
+        self.ids.carousel_container.add_widget(self.subcategories[self.subcat])
+        self.ids.carousel_container.bg = "{}/{}-bg.jpg".format(self.cat, self.cat)
 
-class KomidorPage(Screen):
-    def on_pre_enter(self):
-        if check[2] != 1:
-            caros = CarouselMaker("Balay","Komidor")
-            self.add_widget(caros)
-            check[2] = 1
-    
-    def on_enter(self):
-        self.manager.updateTracker(self.name)
+    def on_back_pressed(self):
+        self.manager.category_tracker.pop()
+        self.ids.carousel_container.clear_widgets()
 
-class Kan_ananPage(Screen):
-    def on_pre_enter(self):
-        if check[3] != 1:
-            caros = CarouselMaker("Balay","Kan-anan")
-            self.add_widget(caros)
-            check[3] = 1
+    def CarouselMaker(self, category:str,subcategory:str):
+        conn = sqlite3.connect('Information.db')
+        curs = conn.cursor()
+        curs.execute("SELECT * FROM Information WHERE Category = \"" + category + "\" AND Subcategory = \"" + subcategory +"\"")
+        listofall = curs.fetchall()
+        conn.close()
 
-    def on_enter(self):
-        self.manager.updateTracker(self.name)
+        caros = Carousel(direction = "right")
+        for i in listofall:
+            imagesrc = i[3]
+            sampbis = i[4]
+            sampeng = i[5]
+            container = RelativeLayout(orientation = "vertical", size_hint = (.8, .8),
+            pos_hint = {'center_x': .5, 'center_y': .5})
+            image = Image(source=imagesrc)
+            sentenceBtn = sentenceButton(sampeng, sampbis)
 
-class KatulgananPage(Screen):
-    def on_pre_enter(self):
-        if check[4] != 1:
-            caros = CarouselMaker("Balay","Katulganan")
-            self.add_widget(caros)
-            check[4] = 1
+            container.add_widget(image)
+            container.add_widget(sentenceBtn)
+            caros.add_widget(container)
 
-    def on_enter(self):
-        self.manager.updateTracker(self.name)
+        return caros
 
-class KasilyasPage(Screen):
-    def on_pre_enter(self):
-        if check[5] != 1:
-            caros = CarouselMaker("Balay","Kasilyas")
-            self.add_widget(caros)
-            check[5] = 1 
 
-    def on_enter(self):
-        self.manager.updateTracker(self.name)
+class SubcategoryButton(MDIconButton):
+    def __init__(self, subcat_name, **kwargs):
+        super().__init__(**kwargs)
+        self.subcat_name = subcat_name
+        self.user_font_size = "180dp"
 
-#skuylahan and subcategories
 
-class SkuylahanPage(Screen):
-    def on_enter(self):
-        self.manager.updateTracker(self.name)
-
-class ClassroomPage(Screen):
-    def on_pre_enter(self):
-        if check[6] != 1:
-            caros = CarouselMaker("Skuylahan","Lawak Tunghaan")
-            self.add_widget(caros)
-            check[6] = 1
-    
-    def on_enter(self):
-        self.manager.updateTracker(self.name)
-
-class NumeroPage(Screen):
-    def on_pre_enter(self):
-        if check[7] != 1:
-            caros = CarouselMaker("Skuylahan","Numero")
-            self.add_widget(caros)
-            check[7] = 1
-
-    def on_enter(self):
-        self.manager.updateTracker(self.name)
-
-class ClinicPage(Screen):
-    def on_pre_enter(self):
-        if check[8] != 1:
-            caros = CarouselMaker("Skuylahan","Tambalan")
-            self.add_widget(caros)
-            check[8] = 1
-
-    def on_enter(self):
-        self.manager.updateTracker(self.name)
-
-class LibPage(Screen):
-    def on_pre_enter(self):
-        if check[9] != 1:
-            caros = CarouselMaker("Skuylahan","Bibliyoteka")
-            self.add_widget(caros)
-            check[9] = 1
-
-    def on_enter(self):
-        self.manager.updateTracker(self.name)
-
-class CanteenPage(Screen):
-    def on_pre_enter(self):
-        if check[10] != 1:
-            caros = CarouselMaker("Skuylahan","Kantin")
-            self.add_widget(caros)
-            check[10] = 1
-
-    def on_enter(self):
-        self.manager.updateTracker(self.name)
-
-#tindahan and subcategories
-
-class TindahanPage(Screen):
-    def on_enter(self):
-        self.manager.updateTracker(self.name)
-
-class PagkaonPage(Screen):
-    def on_pre_enter(self):
-        if check[11] != 1:
-            caros = CarouselMaker("Tindahan","Pagkaon")
-            self.add_widget(caros)
-            check[11] = 1
-
-    def on_enter(self):
-        self.manager.updateTracker(self.name)
-
-class SaninaPage(Screen):
-    def on_pre_enter(self):
-        if check[12] != 1:
-            caros = CarouselMaker("Tindahan","Sinina")
-            self.add_widget(caros)
-            check[12]
-    
-    def on_enter(self):
-        self.manager.updateTracker(self.name)
-
-class KwartaPage(Screen):
-    def on_pre_enter(self):
-        if check[13] != 1:
-            caros = CarouselMaker("Tindahan","Kuwarta")
-            self.add_widget(caros)
-            check[13] = 1
-
-    def on_enter(self):
-        self.manager.updateTracker(self.name)
+class sentenceButton(Button):
+    def __init__(self,sampeng:str,sampbis:str, **kwargs):
+        super().__init__(**kwargs)
+        self.__sampeng = sampeng
+        self.__sampbis = sampbis
+        # self.text = "Sampol nga tudling-pulong\n(sample sentences)"
+        self.text = ""
+        self.background_normal = ''
+        self.background_color = 0, 0, 0, 0
+        self.font_name = "Mont"
+        
+    def on_release(self):
+        dialog = MDDialog(
+            title = "Sampol nga tudling-pulong\n(sample sentences)",
+            text = ("Bisaya : " + self.__sampbis +"\n" + "English: " + self.__sampeng),
+            size_hint = (0.8, None),
+            pos_hint = {"center_x": .5, "center_y": .5}
+        )
+        dialog.open()
 
 
 
@@ -285,7 +184,7 @@ class BisprendApp(MDApp):
         self.theme_cls.primary_hue= "A700"
         self.theme_cls.accent_palette = "LightGreen"
         self.theme_cls.accent_hue = "A700"
-        self.root = Builder.load_file("bisprend.kv")
+        # self.root = Builder.load_file("bisprend.kv")
 
 #Registering Font
 LabelBase.register(name="Mont",
