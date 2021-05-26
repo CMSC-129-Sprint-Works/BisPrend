@@ -1,43 +1,66 @@
-import xml.etree.ElementTree as ET
+# from user import User
 
-try:
-    tree = ET.parse("items.xml")
-    root = tree.getroot()
-    # print(str(root))
+# userInst = User()
 
-    for elem in root:
-        subelem = elem.findall("datum")
-        print(subelem[0].text)
+# userInst.createUserFile("John Doe")
 
-except FileNotFoundError:
-    data = ET.Element("data")
-    item = ET.SubElement(data,"items")
-    log1 = ET.SubElement(item,"datum")
-    log2 = ET.SubElement(item,"datum")
-    log1.set("name","name")
-    log2.set("name","progress")
-    log1.text = "KievCangs"
-    log2.text = "0"
+# print(userInst.getName())
+# print(userInst.getProgress())
+# print(userInst.hasUser())
 
-    toET = ET.ElementTree()
-    toET._setroot(data)
-    toET.write("items.xml")
-    # pass
-except ET.ParseError:
-    data = ET.Element("data")
-    item = ET.SubElement(data,"items")
-    log1 = ET.SubElement(item,"datum")
-    log2 = ET.SubElement(item,"datum")
-    log1.set("name","name")
-    log2.set("name","progress")
-    log1.text = "KievCangs"
-    log2.text = "0"
+# userInst.registername("Mark")
+# userInst.updateuserprogress(5)
 
-    toET = ET.ElementTree()
-    toET._setroot(data)
-    toET.write("items.xml")
+# userInst2 = User()
 
+# print(userInst.getName())
+# print(userInst.getProgress())
+# print(userInst.hasUser())
+from kivymd.app import MDApp
 
-print("end of run")
+from kivy.lang import Builder
+from kivy.core.text import LabelBase
+#from kivy.properties import ObjectProperty
+from kivy.config import Config
+
+#kivy uix
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.label import Label
+from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.carousel import Carousel
+from kivy.uix.image import Image
+
+#kivymd
+from kivymd.uix.label import MDLabel
+from kivymd.uix.floatlayout import MDFloatLayout
+from kivymd.uix.card import MDCard
+
+import sqlite3
 
 
+
+category = "Balay"
+subcategory = "Pamilya"
+
+def main():
+    conn = sqlite3.connect('Information.db')
+    curs = conn.cursor()
+    curs.execute("SELECT * FROM Information WHERE Category = \"" + category + "\" AND Subcategory = \"" + subcategory +"\"")
+    listofall = curs.fetchall()
+
+    caros = Carousel(direction = "right")
+    for i in listofall:
+        imagesrc = i[3]
+        sampbis = i[4]
+        sampeng = i[5]
+        image = Image(source=imagesrc)
+        card = MDCard(size_hint = (.4,.8),pos_hint = {"center_x": .5, "center_y": .5},)
+        card.add_widget(image)
+        caros.add_widget(card)
+
+    return caros
+
+
+
+
+main()

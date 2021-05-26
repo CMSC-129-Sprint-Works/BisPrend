@@ -10,9 +10,11 @@ class User:
 
     def registername(self, newname:str):
         self.__name = newname
+        self.updateUserFile()
 
     def updateuserprogress(self, newprog:int):
         self.__progress = newprog
+        self.updateUserFile()
 
     def getName(self):
         return self.__name 
@@ -25,7 +27,7 @@ class User:
     
     def checkFile(self):
         try:
-            tree = ET.parse("items.xml")
+            tree = ET.parse("users.xml")
             root = tree.getroot()
 
             for elem in root:
@@ -40,6 +42,24 @@ class User:
         except ET.ParseError:
             self.__nouser = True
     
+    def updateUserFile(self):
+        try:
+            tree = ET.parse("users.xml")
+            root = tree.getroot()
+
+            for elem in root:
+                subelem = elem.findall("datum")
+                subelem[0].text = self.__name
+                subelem[1].text = self.__progress
+
+            self.__nouser = False
+            print("updated user file")
+            
+        except FileNotFoundError:
+            self.__nouser = True
+        except ET.ParseError:
+            self.__nouser = True
+
     def createUserFile(self,name:str):
         self.__name = name
         self.__progress = 0
@@ -55,8 +75,8 @@ class User:
 
         toET = ET.ElementTree()
         toET._setroot(data)
-        toET.write("items.xml")
-        print("wrote in items.xml")
+        toET.write("users.xml")
+        print("wrote in users.xml")
 
 
     # player = User()

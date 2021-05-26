@@ -1,10 +1,14 @@
 #:kivy 2.0.0
 #: import MDIconButton kivymd.uix.button.MDRectangleFlatButton
+#: import MDIconButton kivymd.uix.button.MDIconButton
+#: include quiz.kv
 
 PageManager:
     RegPage:
-    BalayPage:
     MenuSelector:
+    CategoryPage:
+    SubcategoryPage:
+    # QuizPage:
 
 <RegPage>:
     name: "Reg"
@@ -18,7 +22,7 @@ PageManager:
             Rectangle:
                 pos: self.pos
                 size: self.size
-                source: "bg-1.png"
+                source: "bg/bg-1.jpg"
                 
         Label:
             text: "Pangalan"
@@ -42,9 +46,9 @@ PageManager:
 
         MDRectangleFlatButton:
             text: "Ok"
-            md_bg_color: [0, 0, 0, 0.95] #1,0.8,0.4,0.9 <- original color
+            md_bg_color: [1,0.8,0.4,1]
             theme_text_color: 'Custom'
-            text_color: [1,1,1,1]
+            text_color: [0,0,0,1]
             font_size: 30
             font_name: "Mont"
             font_bold: True
@@ -61,7 +65,7 @@ PageManager:
         canvas:
             Rectangle:
                 size: root.width, root.height
-                source: "default-bg.png"
+                source: "bg/default-bg.jpg"
 
         Label:
             text: "Welcome, " + root.playername()
@@ -72,132 +76,114 @@ PageManager:
             #top: root.top - 20
             color: 0.12,0.12,0.12
 
-        Button:
+        MDRectangleFlatButton:
             text: "Balay (Home)"
-            background_color: 0,0,0
-            color: 1,1,1
+            cat_name: "Balay"
+            md_bg_color: [1,0.8,0.4,1]
+            theme_text_color: 'Custom'
+            text_color: [0,0,0,1]
             font_size: 20
             font_name: "Mont"
             size_hint: (0.45,0.1)
             pos_hint: {'center_y': 0.65, 'center_x': 0.5}
-            on_release: 
-                app.root.current = "Balay"
+            on_release:
+                root.manager.updateTracker(self.cat_name)
+                root.manager.current = "Category"
                 root.manager.transition.direction = "left"
-
-        Button:
+                
+        MDRectangleFlatButton:
             text: "Skwelahan (School)"
-            background_color: 0,0,0
-            color: 1,1,1
+            cat_name: "Skuylahan"
+            md_bg_color: [1,0.8,0.4,1]
+            theme_text_color: 'Custom'
+            text_color: [0,0,0,1]
             font_size: 20
             font_name: "Mont"
             size_hint: (0.45,0.1)
             pos_hint: {'center_y': 0.50, 'center_x': 0.5}
-            on_release: 
-                # app.root.current = "Balay"
-                # root.manager.transition.direction = "left"
+            on_release:
+                root.manager.updateTracker(self.cat_name)
+                root.manager.current = "Category"
+                root.manager.transition.direction = "left"
 
-        Button:
+        MDRectangleFlatButton:
             text: "Tindahan (Store)"
-            background_color: 0,0,0
-            color: 1,1,1
+            cat_name: "Tindahan"
+            md_bg_color: [1,0.8,0.4,1]
+            theme_text_color: 'Custom'
+            text_color: [0,0,0,1]
             font_size: 20
             font_name: "Mont"
             size_hint: (0.45,0.1)
             pos_hint: {'center_y': 0.35, 'center_x': 0.5}
-            on_release: 
-                # app.root.current = "Balay"
-                # root.manager.transition.direction = "left"
-
-<BalayPage>:
-    name: "Balay"
-    Carousel:
-        direction: "right"
-        canvas:
-            Rectangle:
-                size: root.width, root.height
-                source: "default-bg.png"
-        MDCard:
-            size_hint: .4, .8
-            pos_hint: {"center_x": .5, "center_y": .5}
-            Image:
-                source: "balay/pamilya.png"
-        MDCard:
-            size_hint: .4, .8
-            pos_hint: {"center_x": .5, "center_y": .5}
-            Image:
-                source: "balay/mama.png"
-        MDCard:
-            size_hint: .4, .8
-            pos_hint: {"center_x": .5, "center_y": .5}
-            Image:
-                source: "balay/papa.png"
-        MDCard:
-            size_hint: .4, .8
-            pos_hint: {"center_x": .5, "center_y": .5}
-            Image:
-                source: "balay/igsoon.png"
-        MDCard:
-            size_hint: .4, .8
-            pos_hint: {"center_x": .5, "center_y": .5}
-            Image:
-                source: "balay/ate.png"
-        MDCard:
-            size_hint: .4, .8
-            pos_hint: {"center_x": .5, "center_y": .5}
-            Image:
-                source: "balay/kuya.png"
-        MDCard:
-            size_hint: .4, .8
-            pos_hint: {"center_x": .5, "center_y": .5}
-            Image:
-                source: "balay/manghud.png"
-        MDCard:
-            size_hint: .4, .8
-            pos_hint: {"center_x": .5, "center_y": .5}
-            Image:
-                source: "balay/sala.png"
-        MDCard:
-            size_hint: .4, .8
-            pos_hint: {"center_x": .5, "center_y": .5}
-            Image:
-                source: "balay/kusina.png"
-        MDCard:
-            size_hint: .4, .8
-            pos_hint: {"center_x": .5, "center_y": .5}
-            Image:
-                source: "balay/kan-anan.png"
-        MDCard:
-            size_hint: .4, .8
-            pos_hint: {"center_x": .5, "center_y": .5}
-            Image:
-                source: "balay/buntag.png"
-        MDCard:
-            size_hint: .4, .8
-            pos_hint: {"center_x": .5, "center_y": .5}
-            Image:
-                source: "balay/udto.png"
-        MDCard:
-            size_hint: .4, .8
-            pos_hint: {"center_x": .5, "center_y": .5}
-            Image:
-                source: "balay/hapon.png"
-        MDCard:
-            size_hint: .4, .8
-            pos_hint: {"center_x": .5, "center_y": .5}
-            Image:
-                source: "balay/gabii.png"
-                
-    FloatLayout:
-        Button:
-            text: "Back"
-            background_color: 0,0,0
-            color: 1,1,1
-            size_hint: (0.1,0.05)
-            pos_hint: {'y':0.90,'x':0.075}
-            on_release: 
-                app.root.current = "Selector"
-                root.manager.transition.direction = "right"
+            on_release:
+                root.manager.updateTracker(self.cat_name)
+                root.manager.current = "Category"
+                root.manager.transition.direction = "left"
 
 
+<CategoryPage>
+    name: "Category"
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            size_hint: 1, None
+            height: "50dp"
+            padding: "10dp"
+            MDRectangleFlatButton:
+                text: "Back"
+                md_bg_color:[1,0.8,0.4,1]
+                theme_text_color:'Custom'
+                text_color: [0,0,0,1]
+                font_name: "Mont"
+                size_hint: None, None
+                size: "100dp", "50dp"
+                on_release:
+                    root.on_back_pressed()
+                    root.manager.current = "Selector"
+                    root.manager.transition.direction = "right"
+        BoxLayout:
+            ScrollView:
+                id: subcat_btns_scrollview
+                do_scroll_x: False
+                bg: ""
+                canvas.before:
+                    Rectangle:
+                        size: self.width, self.height
+                        source: self.bg
+                StackLayout:
+                    pos_hint: {"center_x": .5}
+                    id: subcat_btns_container
+                    size_hint_y: None
+                    height: self.minimum_height
+                    orientation: "lr-tb"
+                    spacing: "10dp"
 
 
+<SubcategoryPage>
+    name: "Subcategory"
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            size_hint: 1, None
+            height: "50dp"
+            padding: "10dp"
+            MDRectangleFlatButton:
+                text: "Back"
+                md_bg_color:[1,0.8,0.4,1]
+                theme_text_color:'Custom'
+                text_color: [0,0,0,1]
+                font_name: "Mont"
+                size_hint: None, None
+                size: "100dp", "50dp"
+                on_release:
+                    root.on_back_pressed()
+                    root.manager.current = "Category"
+                    root.manager.transition.direction = "right"
+        BoxLayout:
+            id: carousel_container
+            bg: ""
+            canvas:
+                Rectangle:
+                    size: self.width, self.height
+                    source: self.bg
