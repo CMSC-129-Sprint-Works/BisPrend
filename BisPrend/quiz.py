@@ -1,6 +1,7 @@
 import random
 import sqlite3
 import time
+import math
 
 from kivy.clock import Clock
 from kivy.graphics import *
@@ -22,6 +23,8 @@ class QuizPage(Screen):
     quiz_items = {}
     num_of_items = 0
     item_num = 0
+    perfect_score = 0
+    passing_score = 0
 
     def __init__(self, cat: str, subcat: str, **kwargs):
         super().__init__(**kwargs)
@@ -33,6 +36,8 @@ class QuizPage(Screen):
         self.setBackground()
         self.score_board = ScoreBoard()
         self.num_of_items = self.countItems(self.quiz_items)
+        self.perfect_score = self.countHighestPossibleScore(self.quiz_items)
+        self.passing_score = math.floor(self.perfect_score*.75)
 
     def on_pre_enter(self, *args):
         super().on_pre_enter(*args)
@@ -45,6 +50,15 @@ class QuizPage(Screen):
         count = 0
         for key in q_items.keys():
             count += len(q_items[key])
+        return count
+    
+    def countHighestPossibleScore(self, q_items):
+        count = 0
+        for key in q_items:
+            if key == "mat":
+                count += (len(q_items[key]) * 5)
+            else:
+                count += len(q_items[key])
         return count
 
     def setBackground(self):
@@ -565,7 +579,16 @@ class BlankScreen(Screen):
     pass
 
 class FinalResult(Screen):
-    pass
+    def on_pre_enter(self, *args):
+        if self.manager.parent.parent.score >= self.manager.parent.parent.passing_score:
+            self.ids.result.text = "You passed the quiz. You've\nunlocked the next category."
+            cat = self.manager.parent.parent.cat
+            subcat = self.manager.parent.parent.subcat
+            self.manager.parent.parent.manager.get_screen("Category").unlockSubcatButton(cat, subcat)
+        else:
+            score_needed = self.manager.parent.parent.passing_score
+            self.ids.result.text = """You completed the quiz. You\nneed at least {} point(s) to\nunlock a new category.
+            """.format(score_needed)
 
 
 # LAYOUTS
