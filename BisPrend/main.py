@@ -34,7 +34,6 @@ Config.set('graphics', 'resizable', True)
 
 newPlayer = User() #global scope (for testing)
 
-
 #Screens
 class PageManager(ScreenManager):
     category_tracker = [] #tracks which category-subcategory the user is in
@@ -52,6 +51,7 @@ class RegPage(Screen):
         Clock.schedule_once(self.skip)
 
     def registerUser(self):
+        global newPlayer
         newPlayer.createUserFile(self.username.text)
         print(f"Name: {newPlayer.getName()} \nProgress: {newPlayer.getProgress()}")
 
@@ -66,6 +66,7 @@ class MenuSelector(Screen):
         print("Tracker: " + str(self.manager.category_tracker))
 
     def playername(self):
+        global newPlayer
         return newPlayer.getName()
 
     def on_balay_btn_pressed(self):
@@ -86,11 +87,12 @@ class MenuSelector(Screen):
 
 class CategoryPage(Screen):
     categories = {}
-    progress = {}
     def __init__(self, **kw):
+        global newPlayer
+        prog = newPlayer.getProgress()
         super().__init__(**kw)
         self.bind(size = self.on_size_change)
-        self.progress = {'balay': 0, 'skuylahan': 0, 'tindahan': 0} #change the numbers to the values in user.xml
+        self.progress = {'balay': prog[0], 'skuylahan': prog[1], 'tindahan': prog[2]} #change the numbers to the values in user.xml
     
     def initSubcatButtons(self):
         for subcat in self.subcategories_list:
