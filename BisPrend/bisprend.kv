@@ -1,14 +1,13 @@
 #:kivy 2.0.0
 #: import MDIconButton kivymd.uix.button.MDRectangleFlatButton
 #: import MDIconButton kivymd.uix.button.MDIconButton
-#:include quiz.kv
+#: include quiz.kv
 
 PageManager:
     RegPage:
     MenuSelector:
     CategoryPage:
     SubcategoryPage:
-    # QuizPage:
 
 <RegPage>:
     name: "Reg"
@@ -78,7 +77,6 @@ PageManager:
 
         MDRectangleFlatButton:
             text: "Balay (Home)"
-            cat_name: "Balay"
             md_bg_color: [1,0.8,0.4,1]
             theme_text_color: 'Custom'
             text_color: [0,0,0,1]
@@ -87,13 +85,10 @@ PageManager:
             size_hint: (0.45,0.1)
             pos_hint: {'center_y': 0.65, 'center_x': 0.5}
             on_release:
-                root.manager.updateTracker(self.cat_name)
-                root.manager.current = "Category"
-                root.manager.transition.direction = "left"
+                root.on_balay_btn_pressed()
                 
         MDRectangleFlatButton:
             text: "Skwelahan (School)"
-            cat_name: "Skuylahan"
             md_bg_color: [1,0.8,0.4,1]
             theme_text_color: 'Custom'
             text_color: [0,0,0,1]
@@ -102,13 +97,10 @@ PageManager:
             size_hint: (0.45,0.1)
             pos_hint: {'center_y': 0.50, 'center_x': 0.5}
             on_release:
-                root.manager.updateTracker(self.cat_name)
-                root.manager.current = "Category"
-                root.manager.transition.direction = "left"
+                root.on_skuylahan_btn_pressed()
 
         MDRectangleFlatButton:
             text: "Tindahan (Store)"
-            cat_name: "Tindahan"
             md_bg_color: [1,0.8,0.4,1]
             theme_text_color: 'Custom'
             text_color: [0,0,0,1]
@@ -117,9 +109,7 @@ PageManager:
             size_hint: (0.45,0.1)
             pos_hint: {'center_y': 0.35, 'center_x': 0.5}
             on_release:
-                root.manager.updateTracker(self.cat_name)
-                root.manager.current = "Category"
-                root.manager.transition.direction = "left"
+                root.on_tindahan_btn_pressed()
 
 
 <CategoryPage>
@@ -151,14 +141,6 @@ PageManager:
                     Rectangle:
                         size: self.width, self.height
                         source: self.bg
-                StackLayout:
-                    pos_hint: {"center_x": .5}
-                    id: subcat_btns_container
-                    size_hint_y: None
-                    height: self.minimum_height
-                    orientation: "lr-tb"
-                    spacing: "10dp"
-
 
 <SubcategoryPage>
     name: "Subcategory"
@@ -187,3 +169,10 @@ PageManager:
                 Rectangle:
                     size: self.width, self.height
                     source: self.bg
+
+<SubcategoryButtonsContainer>
+    pos_hint: {"center_x": .5}
+    size_hint_y: None
+    height: self.minimum_height
+    orientation: "lr-tb"
+    spacing: "10dp"

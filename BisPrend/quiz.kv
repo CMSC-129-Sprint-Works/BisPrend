@@ -1,6 +1,5 @@
 
 <QuizPage>:
-    name: "quiz"
     BoxLayout:
         id: background
         orientation: 'vertical'
@@ -59,7 +58,8 @@
             pos_hint: {"center_x": .5}
             on_release:
                 root.manager.parent.parent.manager.transition.direction = "right"
-                root.manager.parent.parent.manager.current = "portal"
+                # root.manager.parent.parent.manager.current = "portal" #FOR TESTING (quiz-test.py)
+                root.manager.parent.parent.manager.current = "Subcategory" 
         BoxLayout:
 
 <MultipleChoice>:
@@ -351,6 +351,7 @@
                         color: 0,0,0,1
                         font_size: "24dp"
                     Label:
+                        id: result
                         markup: True
                         text: "You completed the quiz."
                         color: 0,0,0,1

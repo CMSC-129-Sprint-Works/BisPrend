@@ -1,6 +1,7 @@
 import random
 import sqlite3
 import time
+import math
 
 from kivy.clock import Clock
 from kivy.graphics import *
@@ -13,7 +14,7 @@ from kivy.uix.screenmanager import Screen
 from kivy.uix.togglebutton import ToggleButton
 from kivymd.uix.button import MDRectangleFlatButton, MDTextButton
 from kivymd.uix.dialog import MDDialog
-# from kivymd.uix.behaviors.toggle_behavior import MDToggleButton
+
 
 class QuizPage(Screen):
     score = 0
@@ -22,13 +23,21 @@ class QuizPage(Screen):
     quiz_items = {}
     num_of_items = 0
     item_num = 0
+    perfect_score = 0
+    passing_score = 0
 
-    def __init__(self, **kwargs):
+    def __init__(self, cat: str, subcat: str, **kwargs):
         super().__init__(**kwargs)
+        self.cat = cat.lower()
+        self.subcat = subcat.lower()
+        self.quiz_items = {}
+        self.item_num = 0
         self.loadDatabase()
         self.setBackground()
         self.score_board = ScoreBoard()
         self.num_of_items = self.countItems(self.quiz_items)
+        self.perfect_score = self.countHighestPossibleScore(self.quiz_items)
+        self.passing_score = math.floor(self.perfect_score*.75)
 
     def on_pre_enter(self, *args):
         super().on_pre_enter(*args)
@@ -42,19 +51,20 @@ class QuizPage(Screen):
         for key in q_items.keys():
             count += len(q_items[key])
         return count
+    
+    def countHighestPossibleScore(self, q_items):
+        count = 0
+        for key in q_items:
+            if key == "mat":
+                count += (len(q_items[key]) * 5)
+            else:
+                count += len(q_items[key])
+        return count
 
     def setBackground(self):
-        if self.cat == "skuylahan":
-            self.ids.background.bg = "skuylahan/school-bg.jpg"
-        else:
-            self.ids.background.bg = "{}/{}-bg.jpg".format(self.cat, self.cat)
+        self.ids.background.bg = "{}/{}-bg.jpg".format(self.cat, self.cat)
 
     def loadDatabase(self):
-        # category and subcategory
-        # self.cat =  self.manager.category_tracker[0].lower() #converted to lower case to match
-        # self.subcat = self.manager.category_tracker[1].lower()
-        self.cat = "balay" #for testing purpose
-        self.subcat = "pamilya-timbaya" #for testing purpose
         # fetch quiz data from the quiz database (quiz.db)
         conn = sqlite3.connect('quiz.db')
         curs = conn.cursor()
@@ -171,7 +181,7 @@ class QuizPage(Screen):
 
 
 class MultipleChoice(Screen):
-    source = ""
+    source = "quiz/"
     entry = ""
     correct_answer = ""
     selected_answer = ""
@@ -183,7 +193,7 @@ class MultipleChoice(Screen):
         self.manager.parent.parent.updateScoreBoard()
 
     def loadData(self, item):
-        self.source = "{}/{}/".format(item[3], item[4])
+        # self.source = "{}/{}/".format(item[3], item[4])
         self.entry = item[0].strip()
         self.correct_answer = item[2].strip()
         self.choices = item[1].split(",")
@@ -250,7 +260,7 @@ class MultipleChoice(Screen):
 
 
 class TrueOrFalse(Screen):
-    source = ""
+    source = "quiz/"
     entry = ""
     entry_name = ""
     correct_answer = ""
@@ -262,7 +272,7 @@ class TrueOrFalse(Screen):
         self.manager.parent.parent.updateScoreBoard()
 
     def loadData(self, item):
-        self.source = "{}/{}/".format(item[3], item[4])
+        # self.source = "{}/{}/".format(item[3], item[4])
         self.entry = item[0].strip()
         self.entry_name = item[1].strip()
         self.correct_answer = item[2].strip()
@@ -320,7 +330,7 @@ class TrueOrFalse(Screen):
 
 
 class FillInTheBlank(Screen):
-    source = ""
+    source = "quiz/"
     entry = ""
     entry_name = ""
     correct_answer = ""
@@ -334,11 +344,12 @@ class FillInTheBlank(Screen):
         self.manager.parent.parent.updateScoreBoard()
 
     def initEntryChars(self):
+        self.entry_chars = {}
         for i in range(len(self.entry_name)):
             self.entry_chars[i] = self.entry_name[i]
 
     def loadData(self, item):
-        self.source = "{}/{}/".format(item[4], item[5])
+        # self.source = "{}/{}/".format(item[4], item[5])
         self.entry = item[0].strip()
         self.entry_name = item[1].strip()
         self.selected_answer = self.entry_name #the selected answer is initially the entry_name which has blanks (_)
@@ -457,7 +468,7 @@ class FillInTheBlank(Screen):
 
 
 class MatchingType(Screen):
-    source = "" #source of the image
+    source = "quiz/" #source of the image
     entries = {}
     entry_names = []
     entry_images = []
@@ -486,7 +497,7 @@ class MatchingType(Screen):
         print("Entry Images:", str(self.entry_images))
 
     def loadData(self, item):
-        self.source = "{}/{}/".format(item[1], item[2])
+        # self.source = "{}/{}/".format(item[1], item[2])
         self.initEntries(item[0])
         random.shuffle(self.entry_names)
         random.shuffle(self.entry_images)
@@ -568,7 +579,16 @@ class BlankScreen(Screen):
     pass
 
 class FinalResult(Screen):
-    pass
+    def on_pre_enter(self, *args):
+        if self.manager.parent.parent.score >= self.manager.parent.parent.passing_score:
+            self.ids.result.text = "You passed the quiz. You've\nunlocked the next category."
+            cat = self.manager.parent.parent.cat
+            subcat = self.manager.parent.parent.subcat
+            self.manager.parent.parent.manager.get_screen("Category").unlockSubcatButton(cat, subcat)
+        else:
+            score_needed = self.manager.parent.parent.passing_score
+            self.ids.result.text = """You completed the quiz. You\nneed at least {} point(s) to\nunlock a new category.
+            """.format(score_needed)
 
 
 # LAYOUTS
