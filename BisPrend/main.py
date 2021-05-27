@@ -14,6 +14,7 @@ from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.stacklayout import StackLayout
 from kivy.uix.relativelayout import RelativeLayout
+from kivy.uix.boxlayout import BoxLayout
 
 #kivymd
 from kivymd.uix.label import MDLabel
@@ -24,11 +25,10 @@ from kivymd.uix.dialog import MDDialog
 
 from kivy.clock import Clock
 from user import User
-# import quiz
+from quiz import QuizPage
 import os
 import math
 import sqlite3
-
 
 Config.set('graphics', 'resizable', True)
 
@@ -113,17 +113,27 @@ class CategoryPage(Screen):
 class SubcategoryPage(Screen):
     subcategories = {}
     def on_pre_enter(self):
-        self.cat = self.manager.category_tracker[0]
-        self.subcat = self.manager.category_tracker[1].capitalize()
-        if self.subcat not in self.subcategories.keys():
-            self.subcategories[self.subcat] = self.CarouselMaker(self.cat, self.subcat)
+        if not self.ids.carousel_container.children:
+            self.cat = self.manager.category_tracker[0]
+            self.subcat = self.manager.category_tracker[1].capitalize()
+            self.quiz_name = self.subcat + "-quiz"
+            if self.subcat not in self.subcategories.keys():
+                self.subcategories[self.subcat] = {}
+                self.subcategories[self.subcat]['carousel'] = self.CarouselMaker(self.cat, self.subcat)
+                self.subcategories[self.subcat]['quiz'] = QuizPage(cat=self.cat, subcat=self.subcat, name=self.quiz_name)
+                self.manager.add_widget(self.subcategories[self.subcat]['quiz'])
 
-        self.ids.carousel_container.add_widget(self.subcategories[self.subcat])
-        self.ids.carousel_container.bg = "{}/{}-bg.jpg".format(self.cat, self.cat)
+            self.ids.carousel_container.add_widget(self.subcategories[self.subcat]['carousel'])
+            self.ids.carousel_container.bg = "{}/{}-bg.jpg".format(self.cat, self.cat)
 
     def on_back_pressed(self):
         self.manager.category_tracker.pop()
         self.ids.carousel_container.clear_widgets()
+
+    def on_quiz_btn_pressed(self, *args):
+        print("Take Quiz")
+        self.manager.transition.direction = "left"
+        self.manager.current = self.quiz_name
 
     def CarouselMaker(self, category:str,subcategory:str):
         conn = sqlite3.connect('Information.db')
@@ -145,7 +155,10 @@ class SubcategoryPage(Screen):
             container.add_widget(image)
             container.add_widget(sentenceBtn)
             caros.add_widget(container)
-
+        
+        quiz_portal = QuizPortal()
+        quiz_portal.btn.bind(on_release = self.on_quiz_btn_pressed)
+        caros.add_widget(quiz_portal)
         return caros
 
 
@@ -175,6 +188,17 @@ class sentenceButton(Button):
             pos_hint = {"center_x": .5, "center_y": .5}
         )
         dialog.open()
+
+
+class QuizPortal(RelativeLayout):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        box = BoxLayout(orientation = "vertical", size_hint = (.8, .3), pos_hint = {"center_x": .5, "center_y": .6})
+        lbl = Label(text = "Well Done!", color = (0,0,0,1), font_name = "Mont", font_size = "30dp")
+        self.btn = Button(text = "take quiz", size_hint = (.5, 1/3), pos_hint = {"center_x": .5})
+        box.add_widget(lbl)
+        box.add_widget(self.btn)
+        self.add_widget(box)
 
 
 

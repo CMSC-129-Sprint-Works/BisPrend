@@ -13,7 +13,7 @@ from kivy.uix.screenmanager import Screen
 from kivy.uix.togglebutton import ToggleButton
 from kivymd.uix.button import MDRectangleFlatButton, MDTextButton
 from kivymd.uix.dialog import MDDialog
-# from kivymd.uix.behaviors.toggle_behavior import MDToggleButton
+
 
 class QuizPage(Screen):
     score = 0
@@ -23,8 +23,12 @@ class QuizPage(Screen):
     num_of_items = 0
     item_num = 0
 
-    def __init__(self, **kwargs):
+    def __init__(self, cat: str, subcat: str, **kwargs):
         super().__init__(**kwargs)
+        self.cat = cat.lower()
+        self.subcat = subcat.lower()
+        self.quiz_items = {}
+        self.item_num = 0
         self.loadDatabase()
         self.setBackground()
         self.score_board = ScoreBoard()
@@ -44,17 +48,9 @@ class QuizPage(Screen):
         return count
 
     def setBackground(self):
-        if self.cat == "skuylahan":
-            self.ids.background.bg = "skuylahan/school-bg.jpg"
-        else:
-            self.ids.background.bg = "{}/{}-bg.jpg".format(self.cat, self.cat)
+        self.ids.background.bg = "{}/{}-bg.jpg".format(self.cat, self.cat)
 
     def loadDatabase(self):
-        # category and subcategory
-        # self.cat =  self.manager.category_tracker[0].lower() #converted to lower case to match
-        # self.subcat = self.manager.category_tracker[1].lower()
-        self.cat = "balay" #for testing purpose
-        self.subcat = "pamilya-timbaya" #for testing purpose
         # fetch quiz data from the quiz database (quiz.db)
         conn = sqlite3.connect('quiz.db')
         curs = conn.cursor()
@@ -171,7 +167,7 @@ class QuizPage(Screen):
 
 
 class MultipleChoice(Screen):
-    source = ""
+    source = "quiz/"
     entry = ""
     correct_answer = ""
     selected_answer = ""
@@ -183,7 +179,7 @@ class MultipleChoice(Screen):
         self.manager.parent.parent.updateScoreBoard()
 
     def loadData(self, item):
-        self.source = "{}/{}/".format(item[3], item[4])
+        # self.source = "{}/{}/".format(item[3], item[4])
         self.entry = item[0].strip()
         self.correct_answer = item[2].strip()
         self.choices = item[1].split(",")
@@ -250,7 +246,7 @@ class MultipleChoice(Screen):
 
 
 class TrueOrFalse(Screen):
-    source = ""
+    source = "quiz/"
     entry = ""
     entry_name = ""
     correct_answer = ""
@@ -262,7 +258,7 @@ class TrueOrFalse(Screen):
         self.manager.parent.parent.updateScoreBoard()
 
     def loadData(self, item):
-        self.source = "{}/{}/".format(item[3], item[4])
+        # self.source = "{}/{}/".format(item[3], item[4])
         self.entry = item[0].strip()
         self.entry_name = item[1].strip()
         self.correct_answer = item[2].strip()
@@ -320,7 +316,7 @@ class TrueOrFalse(Screen):
 
 
 class FillInTheBlank(Screen):
-    source = ""
+    source = "quiz/"
     entry = ""
     entry_name = ""
     correct_answer = ""
@@ -334,11 +330,12 @@ class FillInTheBlank(Screen):
         self.manager.parent.parent.updateScoreBoard()
 
     def initEntryChars(self):
+        self.entry_chars = {}
         for i in range(len(self.entry_name)):
             self.entry_chars[i] = self.entry_name[i]
 
     def loadData(self, item):
-        self.source = "{}/{}/".format(item[4], item[5])
+        # self.source = "{}/{}/".format(item[4], item[5])
         self.entry = item[0].strip()
         self.entry_name = item[1].strip()
         self.selected_answer = self.entry_name #the selected answer is initially the entry_name which has blanks (_)
@@ -457,7 +454,7 @@ class FillInTheBlank(Screen):
 
 
 class MatchingType(Screen):
-    source = "" #source of the image
+    source = "quiz/" #source of the image
     entries = {}
     entry_names = []
     entry_images = []
@@ -486,7 +483,7 @@ class MatchingType(Screen):
         print("Entry Images:", str(self.entry_images))
 
     def loadData(self, item):
-        self.source = "{}/{}/".format(item[1], item[2])
+        # self.source = "{}/{}/".format(item[1], item[2])
         self.initEntries(item[0])
         random.shuffle(self.entry_names)
         random.shuffle(self.entry_images)
