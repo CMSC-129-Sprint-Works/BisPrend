@@ -47,16 +47,19 @@ class PageManager(ScreenManager):
 
 
 class RegPage(Screen):    
-    def on_enter(self):
+    def on_pre_enter(self):
         Clock.schedule_once(self.skip)
 
     def registerUser(self):
         global newPlayer
         newPlayer.createUserFile(self.username.text)
         print(f"Name: {newPlayer.getName()} \nProgress: {newPlayer.getProgress()}")
+        self.skip()
 
-    def skip(self,dt):
-        if(not newPlayer.hasUser()):
+    def skip(self,*args):
+        global newPlayer
+        if(not newPlayer.hasNoUser()):
+            self.manager.get_screen('Selector').ids.welcome_name.text = "Welcome, " + newPlayer.getName()
             self.manager.current = 'Selector'
 
 
@@ -64,10 +67,6 @@ class MenuSelector(Screen):
     def on_enter(self):
         self.manager.category_tracker = [] #reset the tracker to empty
         print("Tracker: " + str(self.manager.category_tracker))
-
-    def playername(self):
-        global newPlayer
-        return newPlayer.getName()
 
     def on_balay_btn_pressed(self):
         self.manager.updateTracker("balay")
@@ -88,9 +87,9 @@ class MenuSelector(Screen):
 class CategoryPage(Screen):
     categories = {}
     def __init__(self, **kw):
+        super().__init__(**kw)
         global newPlayer
         prog = newPlayer.getProgress()
-        super().__init__(**kw)
         self.bind(size = self.on_size_change)
         self.progress = {'balay': prog[0], 'skuylahan': prog[1], 'tindahan': prog[2]} #change the numbers to the values in user.xml
     
@@ -121,6 +120,9 @@ class CategoryPage(Screen):
         if btn_to_unlock.locked:
             btn_to_unlock.unlock()
             btn_to_unlock.bind(on_release = self.on_subcat_btn_pressed)
+            # update user progress and user file
+            global newPlayer
+            newPlayer.updateUserProgress(cat)
 
     def updatePadding(self):
         num_btns = math.floor(self.width/210)

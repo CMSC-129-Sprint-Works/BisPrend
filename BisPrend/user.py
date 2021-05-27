@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+import re
 
 #user dictionary
 class User:
@@ -12,17 +13,22 @@ class User:
         self.__name = newname
         self.updateUserFile()
 
-    def updateuserprogress(self, newprog:int):
-        self.__progress = newprog
+    def updateUserProgress(self, cat:str):
+        if cat == 'balay':
+            self.__progress[0] += 1
+        elif cat == 'skuylahan':
+            self.__progress[1] += 1
+        elif cat == 'tindahan':
+            self.__progress[2] += 1
         self.updateUserFile()
 
     def getName(self):
-        return self.__name 
+        return self.__name
 
     def getProgress(self):
         return self.__progress
 
-    def hasUser(self):
+    def hasNoUser(self):
         return self.__nouser
     
     def checkFile(self):
@@ -47,6 +53,8 @@ class User:
             self.__nouser = True
     
     def updateUserFile(self):
+        newprog = re.sub("\[|\s|\]", "", str(self.__progress))
+
         try:
             tree = ET.parse("users.xml")
             root = tree.getroot()
@@ -54,8 +62,9 @@ class User:
             for elem in root:
                 subelem = elem.findall("datum")
                 subelem[0].text = self.__name
-                subelem[1].text = self.__progress
-
+                subelem[1].text = str(newprog)
+            
+            tree.write("users.xml")
             self.__nouser = False
             print("updated user file")
             
