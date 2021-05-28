@@ -31,8 +31,11 @@ import math
 import sqlite3
 
 Config.set('graphics', 'resizable', True)
+# Config.set('kivy','window_icon','bg/bisprend-logo.png')
 
 newPlayer = User() #global scope (for testing)
+BLUE_THEME_COLOR = 72/255, 127/255, 165/255
+YELLOW_THEME_COLOR = 1, 0.8, 0.4
 
 #Screens
 class PageManager(ScreenManager):
@@ -282,11 +285,21 @@ class QuizPortal(RelativeLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         box = BoxLayout(orientation = "vertical", size_hint = (.8, .3), pos_hint = {"center_x": .5, "center_y": .6})
-        lbl = Label(text = "Well Done!", color = (0,0,0,1), font_name = "Mont", font_size = "30dp")
-        self.btn = Button(text = "take quiz", size_hint = (.5, 1/3), pos_hint = {"center_x": .5})
+        lbl = Label(text = "Well Done!", color = (.12,.12,.12,1), font_name = "Mont", font_size = "30dp")
+        self.btn = Button(text = "Take Quiz", pos_hint = {"center_x": .5})
+        self.btn.size_hint = (None, None)
+        self.btn.width = self.btn.texture_size[0] + 150
+        self.btn.height = self.btn.texture_size[1] + 50
+        self.btn.background_normal = ''
+        self.btn.background_down = ''
+        self.btn.bind(state = self.toggleBtnColor)
+        self.btn.background_color = BLUE_THEME_COLOR + (1,)
         box.add_widget(lbl)
         box.add_widget(self.btn)
         self.add_widget(box)
+    
+    def toggleBtnColor(self, *args):
+        self.btn.background_color = BLUE_THEME_COLOR + ((.8,) if self.btn.state == 'down' else (1,))
 
 
 
@@ -296,7 +309,7 @@ class BisprendApp(MDApp):
         self.theme_cls.primary_hue= "A700"
         self.theme_cls.accent_palette = "LightGreen"
         self.theme_cls.accent_hue = "A700"
-        # self.root = Builder.load_file("bisprend.kv")
+        self.icon = "bg/bisprend-logo.png"
 
 #Registering Font
 LabelBase.register(name="Mont",
