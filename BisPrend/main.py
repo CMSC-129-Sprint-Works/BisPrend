@@ -11,7 +11,7 @@ from kivy.uix.image import Image
 from kivy.uix.button import Button
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
-from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, FallOutTransition
 from kivy.uix.stacklayout import StackLayout
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.boxlayout import BoxLayout
@@ -46,21 +46,29 @@ class PageManager(ScreenManager):
             print("Tracker: " + str(self.category_tracker))
 
 
-class RegPage(Screen):    
-    def on_pre_enter(self):
-        Clock.schedule_once(self.skip)
+class LoadingPage(Screen):
+    def on_enter(self, *args):
+        Clock.schedule_once(self.skip, 5)
 
+    def skip(self, *args):
+        global newPlayer
+        self.manager.transition = FallOutTransition(duration = .01)
+        if(newPlayer.hasNoUser()):
+            self.manager.current = "Reg"
+        else:
+            self.manager.get_screen('Selector').ids.welcome_name.text = "Welcome, " + newPlayer.getName()
+            self.manager.current = 'Selector'
+        self.manager.transition = SlideTransition()
+
+
+class RegPage(Screen):
     def registerUser(self):
         global newPlayer
         newPlayer.createUserFile(self.username.text)
         print(f"Name: {newPlayer.getName()} \nProgress: {newPlayer.getProgress()}")
-        self.skip()
-
-    def skip(self,*args):
-        global newPlayer
-        if(not newPlayer.hasNoUser()):
-            self.manager.get_screen('Selector').ids.welcome_name.text = "Welcome, " + newPlayer.getName()
-            self.manager.current = 'Selector'
+        self.manager.get_screen('Selector').ids.welcome_name.text = "Welcome, " + newPlayer.getName()
+        self.manager.transition.direction = "left"
+        self.manager.current = 'Selector'
 
 
 class MenuSelector(Screen):
@@ -201,8 +209,7 @@ class SubcategoryPage(Screen):
             imagesrc = i[3]
             sampbis = i[4]
             sampeng = i[5]
-            container = RelativeLayout(orientation = "vertical", size_hint = (.8, .8),
-            pos_hint = {'center_x': .5, 'center_y': .5})
+            container = RelativeLayout(size_hint = (.8, .8), pos_hint = {'center_x': .5, 'center_y': .5})
             image = Image(source=imagesrc)
             sentenceBtn = sentenceButton(sampeng, sampbis)
 
