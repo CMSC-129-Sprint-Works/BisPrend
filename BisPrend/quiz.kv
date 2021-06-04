@@ -1,6 +1,5 @@
 
 <QuizPage>:
-    name: "quiz"
     BoxLayout:
         id: background
         orientation: 'vertical'
@@ -30,36 +29,57 @@
     BoxLayout:
         orientation: "vertical"
         spacing: "20dp"
-        FloatLayout:
-            Label:
-                text: "Welcome to Bisaya Quiz"
-                color: 0,0,0,1
-                font_name: "Mont"
-                font_size: 40
-                pos_hint: {"center_x": .5, "center_y": .5}
-        Button:
-            text: "Start"
+        Label:
+            text: "Dayon sa Pasulit"
+            color: 0,0,0,1
             font_name: "Mont"
-            font_size: 20
-            size_hint: .7, 1
+            font_size: "35sp"
+            size_hint_y: None
+            text_size: self.size
+            halign: "center"
+            valign: "middle"
+        Button:
+            id: quiz_std_btn
+            text: "Sugod"
+            font_name: "Mont"
+            font_size: "18sp"
+            # color: 0,0,0,1
+            # background_normal: ''
+            # background_down: ''
+            # background_color: (1,0.8,0.4,1) if self.state == 'normal' else (1,0.8,0.4,.7)
+            size_hint: None, None
+            width: self.texture_size[0] + dp(100)
+            height: self.texture_size[1] + dp(30)
             pos_hint: {"center_x": .5}
             on_release:
                 root.manager.parent.parent.loadQuizItems()
         Button:
-            text: "Instructions"
-            font_name: "Mont"
-            font_size: 20
-            size_hint: .7, 1
-            pos_hint: {"center_x": .5}
-        Button:
-            text: "Exit"
-            font_name: "Mont"
-            font_size: 20
-            size_hint: .7, 1
-            pos_hint: {"center_x": .5}
+            text: "Balik"
+            font_name: quiz_std_btn.font_name
+            font_size: quiz_std_btn.font_size
+            color: quiz_std_btn.color
+            background_normal: quiz_std_btn.background_normal
+            background_down: quiz_std_btn.background_down
+            # background_color: (1,0.8,0.4,1) if self.state == 'normal' else (1,0.8,0.4,.7)
+            size_hint: None, None
+            size: quiz_std_btn.size
+            pos_hint: quiz_std_btn.pos_hint
             on_release:
                 root.manager.parent.parent.manager.transition.direction = "right"
-                root.manager.parent.parent.manager.current = "portal"
+                root.manager.parent.parent.manager.current = "Subcategory"
+        Button:
+            text: "Gawas"
+            font_name: quiz_std_btn.font_name
+            font_size: quiz_std_btn.font_size
+            color: quiz_std_btn.color
+            background_normal: quiz_std_btn.background_normal
+            background_down: quiz_std_btn.background_down
+            # background_color: (1,0.8,0.4,1) if self.state == 'normal' else (1,0.8,0.4,.7)
+            size_hint: None, None
+            size: quiz_std_btn.size
+            pos_hint: quiz_std_btn.pos_hint
+            on_release:
+                root.on_exit_pressed()
         BoxLayout:
 
 <MultipleChoice>:
@@ -169,6 +189,11 @@
                     text: "Entry Name"
                     color: 0,0,0,1
                     font_size: "24dp"
+                    text_size: self.width, None
+                    size_hint: 1, None
+                    height: self.texture_size[1]
+                    halign: 'center'
+                    valign: 'top'
             Label:
                 text: ""
                 size_hint: 1, .1
@@ -267,52 +292,67 @@
                 pos_hint: {"right": .6, "center_y": .1}
                 answer: entry_img_5.source
 
-            MDLabel:
+            Label:
                 id: entry_name_1
                 text: ""
                 color: 0,0,0,1
                 size_hint: .3, .19
                 pos_hint: {"right": .3, "center_y": .9}
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
             MATBtnNumber:
                 text: "1"
                 pos_hint: {"x": .3, "center_y": .9}
                 answer: entry_name_1.text
-            MDLabel:
+            Label:
                 id: entry_name_2
                 text: ""
                 color: 0,0,0,1
                 size_hint: .3, .19
                 pos_hint: {"right": .3, "center_y": .7}
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
             MATBtnNumber:
                 text: "2"
                 pos_hint: {"x": .3, "center_y": .7}
                 answer: entry_name_2.text
-            MDLabel:
+            Label:
                 id: entry_name_3
                 text: ""
                 color: 0,0,0,1
                 size_hint: .3, .19
                 pos_hint: {"right": .3, "center_y": .5}
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
             MATBtnNumber:
                 text: "3"
                 pos_hint: {"x": .3, "center_y": .5}
                 answer: entry_name_3.text
-            MDLabel:
+            Label:
                 id: entry_name_4
                 text: ""
                 color: 0,0,0,1
                 size_hint: .3, .19
                 pos_hint: {"right": .3, "center_y": .3}
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
             MATBtnNumber:
                 text: "4"
                 pos_hint: {"x": .3, "center_y": .3}
                 answer: entry_name_4.text
-            MDLabel:
+            Label:
                 id: entry_name_5
                 text: ""
                 color: 0,0,0,1
                 size_hint: .3, .19
                 pos_hint: {"right": .3, "center_y": .1}
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
             MATBtnNumber:
                 text: "5"
                 pos_hint: {"x": .3, "center_y": .1}
@@ -326,51 +366,82 @@
 
 <FinalResult>
     name: "final-result"
-    FloatLayout:
-        pos_hint: {"center_x": .5, "center_y": .60}
-        size_hint: None, .9
-        width: max(root.width*.7, self.height)
-        canvas:
-            Color:
-                rgba: 1,1,1,1
-            Rectangle:
-                size: self.size
-                pos: self.pos
+    BoxLayout:
+        orientation: "vertical"
+        pos_hint: {"center_x": .5, "top": 1}
+        size_hint: None, .85
+        width: root.width if root.width <= self.height else self.height
         BoxLayout:
             orientation: "vertical"
-            pos: self.parent.pos
-            AnchorLayout:
-                anchor_x: "center"
-                anchor_y: "bottom"
-                BoxLayout:
-                    orientation: "vertical"
-                    size_hint: 1, .5
-                    Label:
-                        markup: True
-                        text: "[i]Congratulations![/i]"
-                        color: 0,0,0,1
-                        font_size: "24dp"
-                    Label:
-                        markup: True
-                        text: "You completed the quiz."
-                        color: 0,0,0,1
-                        font_size: "14dp"
-            AnchorLayout:
-                anchor_x: "center"
-                anchor_y: "center"
+            padding: "20dp", "10dp"
+            canvas:
+                Color:
+                    rgba: 1,1,1,1
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+            Widget: #blank space
+            BoxLayout:
+                orientation: "vertical"
+                padding: "5dp"
+                spacing: "5dp"
+                size_hint: None, None
+                size: dp(100), dp(60)
+                pos_hint: {"center_x": .5}
+                canvas:
+                    Color:
+                        rgba: 0,0,0,1
+                    Line:
+                        rectangle: (self.x,self.y,self.width, self.height)
+                    Line:
+                        points: (self.x, self.top-20, self.right, self.top-20)
+                Label:
+                    text: "Puntos"
+                    color: 0,0,0,1
+                    font_name: "Mont"
+                    size_hint: 1, .33
+                Label:
+                    id: final_score
+                    text: "0"
+                    color: 0,0,0,1
+                    font_size: 30
+            Label:
+                markup: True
+                text: "[i]Pagpahalipay![/i]"
+                color: 0,0,0,1
+                font_size: "24dp"
+                size_hint_y: None
+                padding: [0, 20]
+                height: self.texture_size[1]
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
+            Label:
+                id: result
+                markup: True
+                text: "Nahuman nimo ang Pasulit.\nYou completed the quiz."
+                color: 0,0,0,1
+                font_size: "14dp"
+                size_hint_y: None
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
+            Widget: #blank space
+            BoxLayout:
+                size_hint: None, None
+                pos_hint: {"center_x": .5, "center_y": .5}
                 MDRaisedButton:
-                    text: "Back to Menu"
-                    adaptive_size: True
-                    on_release:
-                        root.manager.transition.direction = "right"
-                        root.manager.current = "menu"
+                    text: "Sige"
+                    md_bg_color: 72/255, 127/255, 165/255, 1
+                    pos_hint: {"center_y": .5}
+                    on_release: root.on_back_pressed()
 
 
 #LAYOUTS
 <ScoreBoard>
     orientation: "horizontal"
     Button:
-        text: "Back"
+        text: "Balik"
         size_hint: .2, 1
         pos_hint: {"x": 0}
         on_release: root.parent.parent.parent.showPauseDialog()
@@ -393,7 +464,7 @@
             Line:
                 points: (self.x, self.top*.66, self.right, self.top*.66)
         Label:
-            text: "Question"
+            text: "Pangutana"
             color: 0,0,0,1
             font_name: "Mont"
             size_hint: 1, .33
@@ -421,7 +492,7 @@
             Line:
                 points: (self.x, self.top*.66, self.right, self.top*.66)
         Label:
-            text: "Score"
+            text: "Puntos"
             color: 0,0,0,1
             font_name: "Mont"
             size_hint: 1, .33
@@ -445,16 +516,20 @@
                 size: root.size
                 pos: root.pos
         Label:
-            text: "Quiz Paused"
+            text: "Pahuway sa"
             font_name: "Mont"
             font_size: "24dp"
             color: 0,0,0,1
+            size_hint_y: None
+            text_size: self.size
+            halign: "center"
+            valign: "middle"
         Button:
-            text: "Resume Quiz"
+            text: "Padayun sa Pasulit"
             on_release: root.dismiss() 
         Button:
             id: exit_btn
-            text: "Exit Quiz"
+            text: "Gawas sa Pasulit"
             on_release: root.dismiss()
             
 <CheckResultDialog>
@@ -474,7 +549,7 @@
             Label:
                 id: result
                 markup: True
-                text: "[color=#000000]RESULT[/color]"
+                text: "[color=#000000]RESULTA[/color]"
                 font_size: "24dp"
                 color: 0,0,0,1
                 size_hint: 1, .3

@@ -60,7 +60,7 @@ class LoadingPage(Screen):
         if(newPlayer.hasNoUser()):
             self.manager.current = "Reg"
         else:
-            self.manager.get_screen('Selector').ids.welcome_name.text = "Welcome, " + newPlayer.getName()
+            self.manager.get_screen('Selector').ids.welcome_name.text = "Dayon, " + newPlayer.getName()
             self.manager.current = 'Selector'
         self.manager.transition = SlideTransition()
 
@@ -70,7 +70,7 @@ class RegPage(Screen):
         global newPlayer
         newPlayer.createUserFile(self.username.text)
         print(f"Name: {newPlayer.getName()} \nProgress: {newPlayer.getProgress()}")
-        self.manager.get_screen('Selector').ids.welcome_name.text = "Welcome, " + newPlayer.getName()
+        self.manager.get_screen('Selector').ids.welcome_name.text = "Dayon, " + newPlayer.getName()
         self.manager.transition.direction = "left"
         self.manager.current = 'Selector'
 
@@ -217,14 +217,12 @@ class SubcategoryPage(Screen):
             sampeng = i[5]
             container = RelativeLayout(size_hint = (.8, .8), pos_hint = {'center_x': .5, 'center_y': .5})
             if self.subcat == 'kan-anan':
-                insCard = MDCard(
-                    size_hint=(.2,.08),
-                    pos_hint={"center_x": .5, "center_y": 1.05}
-                )
-                ins = MDLabel(text="Pislita ni", halign="center",
-                              font_name="Mont", font_size="25sp")
-                insCard.add_widget(ins)
-                container.add_widget(insCard)
+
+                ins = MDLabel(text="Pislita ang Imahe", halign="center",
+                              font_name="Mont", font_size="30sp", font_style="H4",
+                              pos_hint={"center_x": .5, "center_y": 1.05},
+                              theme_text_color="Custom", text_color=(0,0,0,0.75))
+                container.add_widget(ins)
             image = Image(source=imagesrc)
             sentenceBtn = sentenceButton(sampeng, sampbis)
 
@@ -288,7 +286,7 @@ class sentenceButton(Button):
         dialog = MDDialog(
             title = "Sampol nga tudling-pulong\n(sample sentences)",
             text = ("Bisaya : " + self.__sampbis +"\n" + "English: " + self.__sampeng),
-            size_hint = (0.8, None),
+            size_hint = (0.5, None),
             pos_hint = {"center_x": .5, "center_y": .5}
         )
         dialog.open()
@@ -298,8 +296,8 @@ class QuizPortal(RelativeLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         box = BoxLayout(orientation = "vertical", size_hint = (.8, .3), pos_hint = {"center_x": .5, "center_y": .6})
-        lbl = Label(text = "Well Done!", color = (.12,.12,.12,1), font_name = "Mont", font_size = "30dp")
-        self.btn = Button(text = "Take Quiz", pos_hint = {"center_x": .5})
+        lbl = Label(text = "Maayo!", color = (.12,.12,.12,1), font_name = "Mont", font_size = "30dp")
+        self.btn = Button(text = "Tubaga ang Pasulit", pos_hint = {"center_x": .5})
         self.btn.size_hint = (None, None)
         self.btn.width = self.btn.texture_size[0] + 150
         self.btn.height = self.btn.texture_size[1] + 50

@@ -1,29 +1,39 @@
 #:kivy 2.0.0
-#: import MDIconButton kivymd.uix.button.MDRectangleFlatButton
-#: import MDIconButton kivymd.uix.button.MDIconButton
 #: include quiz.kv
 
 PageManager:
+    LoadingPage:
     RegPage:
     MenuSelector:
     CategoryPage:
     SubcategoryPage:
-    # QuizPage:
+
+<LoadingPage>
+    name: "loading-screen"
+    RelativeLayout:
+        canvas.before:
+            Color:
+                rgba: 1,1,1,1
+            Rectangle:
+                size: root.size
+                pos: root.pos
+        Label:
+            text: "[color=#f54266]Bis[/color][color=487fa5]Prend[/color]"
+            markup: True
+            font_name: "Mont"
+            bold: True
+            font_size: 50 if root.width >= 350 and root.height >= 500 else 30
 
 <RegPage>:
     name: "Reg"
-
     username: username #object
-    
     FloatLayout:
         orientation: 'vertical'
-        
         canvas:
             Rectangle:
                 pos: self.pos
                 size: self.size
                 source: "bg/bg-1.jpg"
-                
         Label:
             text: "Pangalan"
             font_size: 100
@@ -32,9 +42,8 @@ PageManager:
             color: 0.4,0.4,0.4
             pos_hint: {'center_y': 0.75, 'center_x': 0.5}
             color: 0.12,0.12,0.12
-
         TextInput:
-            text: "Name"
+            text: "Pangalan"
             multiline: False
             focus: False
             id: username
@@ -42,10 +51,8 @@ PageManager:
             font_name: "Mont"
             size_hint: (0.4, 0.15)
             pos_hint: {'center_y': 0.55, 'center_x': 0.5}
-
-
         MDRectangleFlatButton:
-            text: "Ok"
+            text: "Sige"
             md_bg_color: [1,0.8,0.4,1]
             theme_text_color: 'Custom'
             text_color: [0,0,0,1]
@@ -61,65 +68,70 @@ PageManager:
 
 <MenuSelector>:
     name: "Selector"
-    FloatLayout:
+    BoxLayout:
+        orientation: "vertical"
+        spacing: "20dp"
+        padding: "10dp", "30dp"
         canvas:
             Rectangle:
                 size: root.width, root.height
                 source: "bg/default-bg.jpg"
-
+        BoxLayout:
+            size_hint_y: bot_space.size_hint_y*(2/3)
         Label:
-            text: "Welcome, " + root.playername()
+            id: welcome_name
+            text: "Dayon"
             font_name: "Mont"
-            font_size: 40
-            pos_hint: {'center_y': 0.85, 'center_x': 0.5}
-            #center_x: root.width / 2
-            #top: root.top - 20
+            font_size: "35sp"
             color: 0.12,0.12,0.12
-
-        MDRectangleFlatButton:
+            size_hint_y: None
+            text_size: self.size
+            halign: "center"
+            valign: "middle"
+        Button:
             text: "Balay (Home)"
-            cat_name: "Balay"
-            md_bg_color: [1,0.8,0.4,1]
-            theme_text_color: 'Custom'
-            text_color: [0,0,0,1]
-            font_size: 20
-            font_name: "Mont"
-            size_hint: (0.45,0.1)
-            pos_hint: {'center_y': 0.65, 'center_x': 0.5}
+            font_name: std_btn.font_name
+            font_size: std_btn.font_size
+            color: 0,0,0,1
+            background_normal: ''
+            background_down: ''
+            background_color: (1,0.8,0.4,1) if self.state == 'normal' else (1,0.8,0.4,.6)
+            size_hint: None, None
+            size: std_btn.size
+            pos_hint: std_btn.pos_hint
             on_release:
-                root.manager.updateTracker(self.cat_name)
-                root.manager.current = "Category"
-                root.manager.transition.direction = "left"
-                
-        MDRectangleFlatButton:
+                root.on_balay_btn_pressed()
+        Button:
+            id: std_btn
             text: "Skwelahan (School)"
-            cat_name: "Skuylahan"
-            md_bg_color: [1,0.8,0.4,1]
-            theme_text_color: 'Custom'
-            text_color: [0,0,0,1]
-            font_size: 20
             font_name: "Mont"
-            size_hint: (0.45,0.1)
-            pos_hint: {'center_y': 0.50, 'center_x': 0.5}
+            font_size: "18sp"
+            color: 0,0,0,1
+            background_normal: ''
+            background_down: ''
+            background_color: (1,0.8,0.4,1) if self.state == 'normal' else (1,0.8,0.4,.7)
+            size_hint: None, None
+            width: self.texture_size[0] + dp(30)
+            height: self.texture_size[1] + dp(30)
+            pos_hint: {'center_x': .5}
             on_release:
-                root.manager.updateTracker(self.cat_name)
-                root.manager.current = "Category"
-                root.manager.transition.direction = "left"
-
-        MDRectangleFlatButton:
+                root.on_skuylahan_btn_pressed()  
+        Button:
             text: "Tindahan (Store)"
-            cat_name: "Tindahan"
-            md_bg_color: [1,0.8,0.4,1]
-            theme_text_color: 'Custom'
-            text_color: [0,0,0,1]
-            font_size: 20
-            font_name: "Mont"
-            size_hint: (0.45,0.1)
-            pos_hint: {'center_y': 0.35, 'center_x': 0.5}
+            font_name: std_btn.font_name
+            font_size: std_btn.font_size
+            color: 0,0,0,1
+            background_normal: ''
+            background_down: ''
+            background_color: (1,0.8,0.4,1) if self.state == 'normal' else (1,0.8,0.4,.7)
+            size_hint: None, None
+            size: std_btn.size
+            pos_hint: std_btn.pos_hint
             on_release:
-                root.manager.updateTracker(self.cat_name)
-                root.manager.current = "Category"
-                root.manager.transition.direction = "left"
+                root.on_tindahan_btn_pressed()
+        BoxLayout:
+            id: bot_space
+            size_hint_y: 1
 
 
 <CategoryPage>
@@ -130,14 +142,27 @@ PageManager:
             size_hint: 1, None
             height: "50dp"
             padding: "10dp"
-            MDRectangleFlatButton:
-                text: "Back"
-                md_bg_color:[1,0.8,0.4,1]
-                theme_text_color:'Custom'
-                text_color: [0,0,0,1]
+            canvas.before:
+                Color:
+                    rgba: 72/255, 127/255, 165/255, 1
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+            MDTextButton:
+                text: "Balik"
                 font_name: "Mont"
+                padding: [20, 10]
+                # md_bg_color: [1,0.8,0.4,1]
+                theme_text_color:'Custom'
+                text_color: 1,1,1,1
                 size_hint: None, None
                 size: "100dp", "50dp"
+                pos_hint: {'center_y': .5}
+                canvas:
+                    Color:
+                        rgba: 1,1,1,1
+                    Line:
+                        rectangle: (self.x, self.y, self.width, self.height)
                 on_release:
                     root.on_back_pressed()
                     root.manager.current = "Selector"
@@ -151,14 +176,6 @@ PageManager:
                     Rectangle:
                         size: self.width, self.height
                         source: self.bg
-                StackLayout:
-                    pos_hint: {"center_x": .5}
-                    id: subcat_btns_container
-                    size_hint_y: None
-                    height: self.minimum_height
-                    orientation: "lr-tb"
-                    spacing: "10dp"
-
 
 <SubcategoryPage>
     name: "Subcategory"
@@ -168,14 +185,27 @@ PageManager:
             size_hint: 1, None
             height: "50dp"
             padding: "10dp"
-            MDRectangleFlatButton:
-                text: "Back"
-                md_bg_color:[1,0.8,0.4,1]
-                theme_text_color:'Custom'
-                text_color: [0,0,0,1]
+            canvas.before:
+                Color:
+                    rgba: 72/255, 127/255, 165/255, 1
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+            MDTextButton:
+                text: "Balik"
                 font_name: "Mont"
+                padding: [20, 10]
+                md_bg_color: 1,1,1,1 #[1,0.8,0.4,1]
+                theme_text_color:'Custom'
+                text_color: [1,1,1,1]
                 size_hint: None, None
                 size: "100dp", "50dp"
+                pos_hint: {'center_y': .5}
+                canvas:
+                    Color:
+                        rgba: 1,1,1,1
+                    Line:
+                        rectangle: (self.x, self.y, self.width, self.height)
                 on_release:
                     root.on_back_pressed()
                     root.manager.current = "Category"
@@ -187,3 +217,10 @@ PageManager:
                 Rectangle:
                     size: self.width, self.height
                     source: self.bg
+
+<SubcategoryButtonsContainer>
+    pos_hint: {"center_x": .5}
+    size_hint_y: None
+    height: self.minimum_height
+    orientation: "lr-tb"
+    spacing: "10dp"

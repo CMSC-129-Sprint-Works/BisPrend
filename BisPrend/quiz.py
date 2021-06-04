@@ -1,6 +1,7 @@
 import random
 import sqlite3
 import time
+import math
 
 from kivy.clock import Clock
 from kivy.graphics import *
@@ -13,7 +14,7 @@ from kivy.uix.screenmanager import Screen
 from kivy.uix.togglebutton import ToggleButton
 from kivymd.uix.button import MDRectangleFlatButton, MDTextButton
 from kivymd.uix.dialog import MDDialog
-# from kivymd.uix.behaviors.toggle_behavior import MDToggleButton
+
 
 class QuizPage(Screen):
     score = 0
@@ -22,13 +23,21 @@ class QuizPage(Screen):
     quiz_items = {}
     num_of_items = 0
     item_num = 0
+    perfect_score = 0
+    passing_score = 0
 
-    def __init__(self, **kwargs):
+    def __init__(self, cat: str, subcat: str, **kwargs):
         super().__init__(**kwargs)
+        self.cat = cat.lower()
+        self.subcat = subcat.lower()
+        self.quiz_items = {}
+        self.item_num = 0
         self.loadDatabase()
         self.setBackground()
         self.score_board = ScoreBoard()
         self.num_of_items = self.countItems(self.quiz_items)
+        self.perfect_score = self.countHighestPossibleScore(self.quiz_items)
+        self.passing_score = math.floor(self.perfect_score*.75)
 
     def on_pre_enter(self, *args):
         super().on_pre_enter(*args)
@@ -42,19 +51,20 @@ class QuizPage(Screen):
         for key in q_items.keys():
             count += len(q_items[key])
         return count
+    
+    def countHighestPossibleScore(self, q_items):
+        count = 0
+        for key in q_items:
+            if key == "mat":
+                count += (len(q_items[key]) * 5)
+            else:
+                count += len(q_items[key])
+        return count
 
     def setBackground(self):
-        if self.cat == "skuylahan":
-            self.ids.background.bg = "skuylahan/school-bg.jpg"
-        else:
-            self.ids.background.bg = "{}/{}-bg.jpg".format(self.cat, self.cat)
+        self.ids.background.bg = "{}/{}-bg.jpg".format(self.cat, self.cat)
 
     def loadDatabase(self):
-        # category and subcategory
-        # self.cat =  self.manager.category_tracker[0].lower() #converted to lower case to match
-        # self.subcat = self.manager.category_tracker[1].lower()
-        self.cat = "balay" #for testing purpose
-        self.subcat = "pamilya-timbaya" #for testing purpose
         # fetch quiz data from the quiz database (quiz.db)
         conn = sqlite3.connect('quiz.db')
         curs = conn.cursor()
@@ -171,17 +181,20 @@ class QuizPage(Screen):
 
 
 class MultipleChoice(Screen):
+    source = "quiz/"
     entry = ""
     correct_answer = ""
     selected_answer = ""
     choices = []
 
     check_btn = None
+    instruction_lbl = None
 
     def on_enter(self):
         self.manager.parent.parent.updateScoreBoard()
 
     def loadData(self, item):
+        # self.source = "{}/{}/".format(item[3], item[4])
         self.entry = item[0].strip()
         self.correct_answer = item[2].strip()
         self.choices = item[1].split(",")
@@ -189,15 +202,15 @@ class MultipleChoice(Screen):
         random.shuffle(self.choices)
 
     def loadWidgets(self):
-        #self.ids.entry.source = self.source + self.entry :: commented this kay sa database nako gibutang ang source daan
-        self.ids.entry.source = self.entry
-        print(self.ids.entry.source)
+        self.ids.entry.source = self.source + self.entry
         self.ids.choice_1.text = self.choices[0].strip()
         self.ids.choice_2.text = self.choices[1].strip()
         self.ids.choice_3.text = self.choices[2].strip()
         self.ids.choice_4.text = self.choices[3].strip()
         self.check_btn = CheckBtn()
         self.check_btn.bind(on_release = self.on_check_release)
+        self.instruction_lbl = Instruction(text="[b]DAGHANG KAPILIAN[/b]. Pilia ang pulong nga maghulagway sa imahe.\n[b]MULTIPLE CHOICE[/b]. Choose the word that best describes the image.")
+        self.ids.check_btn.add_widget(self.instruction_lbl)
 
     def resetWidgets(self):
         self.ids.entry.source = ""
@@ -205,8 +218,8 @@ class MultipleChoice(Screen):
         self.ids.choice_2.state = 'normal'
         self.ids.choice_3.state = 'normal'
         self.ids.choice_4.state = 'normal'
-        # no need to remove the check_btn since changing the
-        # state to normal (as above) will dynamically do it
+        if self.ids.check_btn.children:
+            self.ids.check_btn.clear_widgets()
 
     def on_choice_toggle(self, choice_btn):
         '''
@@ -216,6 +229,7 @@ class MultipleChoice(Screen):
         '''
         if choice_btn.state == "down":
             self.selected_answer = choice_btn.text
+            self.ids.check_btn.remove_widget(self.instruction_lbl)
             self.ids.check_btn.add_widget(self.check_btn)
         else:
             self.selected_answer = ""
@@ -225,11 +239,11 @@ class MultipleChoice(Screen):
     def on_check_release(self, check_btn_instance):
         result = self.checkAnswer()
         if result == "Correct":
-            check_btn_instance.result_dialog.ids.result.text = "[b][color=#00FF00]CORRECT[/color][/b]"
-            check_btn_instance.result_dialog.ids.description.text = "+1 point"
+            check_btn_instance.result_dialog.ids.result.text = "[b][color=#00FF00]SAKTO[/color][/b]"
+            check_btn_instance.result_dialog.ids.description.text = "+1 puntos"
         else:
-            check_btn_instance.result_dialog.ids.result.text = "[b][color=#FF0000]INCORRECT[/color][/b]"
-            check_btn_instance.result_dialog.ids.description.text = "The correct answer\nis [i]{}[/i].".format(self.correct_answer)
+            check_btn_instance.result_dialog.ids.result.text = "[b][color=#FF0000]SAYOP[/color][/b]"
+            check_btn_instance.result_dialog.ids.description.text = "Ang sakto nga tubag\nkay [i]{}[/i].".format(self.correct_answer)
         
         check_btn_instance.result_dialog.copyCurrentScreen(self)
         check_btn_instance.result_dialog.open()
@@ -250,42 +264,48 @@ class MultipleChoice(Screen):
 
 
 class TrueOrFalse(Screen):
+    source = "quiz/"
     entry = ""
     entry_name = ""
     correct_answer = ""
     selected_answer = ""
 
     check_btn = None
+    instruction_lbl = None
 
     def on_enter(self):
         self.manager.parent.parent.updateScoreBoard()
 
     def loadData(self, item):
+        # self.source = "{}/{}/".format(item[3], item[4])
         self.entry = item[0].strip()
         self.entry_name = item[1].strip()
         self.correct_answer = item[2].strip()
 
     def loadWidgets(self):
-        self.ids.entry.source = self.entry
-        print(self.ids.entry.source)
+        self.ids.entry.source = self.source + self.entry
         self.ids.entry_name.text = self.entry_name
         self.check_btn = CheckBtn()
         self.check_btn.bind(on_release = self.on_check_release)
-    
+        self.instruction_lbl = Instruction(text="[b]SAKTO O SAYOP[/b]. Pilia ang [i]Sakto[/i] kung ang pulong kay naghulagway sa imahe, [i]Sayop[/i] kung dili .\n[b]TRUE OR FALSE[/b]. Choose [i]Sakto[/i] if the word describes the image, otherwise, [i]Sayop[/i].")
+        self.ids.check_btn.add_widget(self.instruction_lbl)
+
     def resetWidgets(self):
         self.ids.entry.source = ""
         self.ids.entry_name.text = ""
         self.ids.choice_1.state = 'normal'
         self.ids.choice_2.state = 'normal'
+        if self.ids.check_btn.children:
+            self.ids.check_btn.clear_widgets()
 
     def on_check_release(self, check_btn_instance):
         result = self.checkAnswer()
         if result == "Correct":
-            check_btn_instance.result_dialog.ids.result.text = "[b][color=#00FF00]CORRECT[/color][/b]"
-            check_btn_instance.result_dialog.ids.description.text = "+1 point"
+            check_btn_instance.result_dialog.ids.result.text = "[b][color=#00FF00]SAKTO[/color][/b]"
+            check_btn_instance.result_dialog.ids.description.text = "+1 puntos"
         else:
-            check_btn_instance.result_dialog.ids.result.text = "[b][color=#FF0000]INCORRECT[/color][/b]"
-            check_btn_instance.result_dialog.ids.description.text = "The correct answer\nis [i]{}[/i].".format(self.correct_answer)
+            check_btn_instance.result_dialog.ids.result.text = "[b][color=#FF0000]SAYOP[/color][/b]"
+            check_btn_instance.result_dialog.ids.description.text = "Ang sakto nga tubag\nkay [i]{}[/i].".format(self.correct_answer)
         check_btn_instance.result_dialog.copyCurrentScreen(self)
         check_btn_instance.result_dialog.open()
 
@@ -297,6 +317,7 @@ class TrueOrFalse(Screen):
         '''
         if choice_btn.state == "down":
             self.selected_answer = choice_btn.text
+            self.ids.check_btn.remove_widget(self.instruction_lbl)
             self.ids.check_btn.add_widget(self.check_btn)
         else:
             self.selected_answer = ""
@@ -319,6 +340,7 @@ class TrueOrFalse(Screen):
 
 
 class FillInTheBlank(Screen):
+    source = "quiz/"
     entry = ""
     entry_name = ""
     correct_answer = ""
@@ -327,15 +349,18 @@ class FillInTheBlank(Screen):
     entry_chars = {}
 
     check_btn = None
+    instruction_lbl = None
 
     def on_enter(self):
         self.manager.parent.parent.updateScoreBoard()
 
     def initEntryChars(self):
+        self.entry_chars = {}
         for i in range(len(self.entry_name)):
             self.entry_chars[i] = self.entry_name[i]
 
     def loadData(self, item):
+        # self.source = "{}/{}/".format(item[4], item[5])
         self.entry = item[0].strip()
         self.entry_name = item[1].strip()
         self.selected_answer = self.entry_name #the selected answer is initially the entry_name which has blanks (_)
@@ -351,8 +376,7 @@ class FillInTheBlank(Screen):
         self.ids.entry_name.text = entry_text.strip()
 
     def loadWidgets(self):
-        self.ids.entry.source = self.entry
-        print(self.ids.entry.source)
+        self.ids.entry.source = self.source + self.entry
         self.ids.choice_1.text = self.choices[0].strip()
         self.ids.choice_2.text = self.choices[1].strip()
         self.ids.choice_3.text = self.choices[2].strip()
@@ -361,6 +385,8 @@ class FillInTheBlank(Screen):
         self.ids.choice_6.text = self.choices[5].strip()
         self.check_btn = CheckBtn()
         self.check_btn.bind(on_release = self.on_check_release)
+        self.instruction_lbl = Instruction(text="[b]SUDLI ANG BLANGKO[/b]. Pilia ang mga letra nga mokompleto sa pulong nga naghulagway sa imahe.\n[b]FILL IN THE BLANKS[/b]. Select letters to complete the word that describes the image.")
+        self.ids.check_btn.add_widget(self.instruction_lbl)
         self.loadEntryNameDisplay()
 
     def resetWidgets(self):
@@ -372,6 +398,8 @@ class FillInTheBlank(Screen):
         self.ids.choice_4.state = 'normal'
         self.ids.choice_5.state = 'normal'
         self.ids.choice_6.state = 'normal'
+        if self.ids.check_btn.children:
+            self.ids.check_btn.clear_widgets()
 
     def on_choice_toggle(self, choice_btn):
         '''
@@ -390,6 +418,7 @@ class FillInTheBlank(Screen):
             self.removeFromEntryName(choice_btn)
         
         if self.answerIsComplete() and self.check_btn not in self.ids.check_btn.children:
+            self.ids.check_btn.remove_widget(self.instruction_lbl)
             self.ids.check_btn.add_widget(self.check_btn)
         elif not self.answerIsComplete() and self.check_btn in self.ids.check_btn.children:
             self.ids.check_btn.remove_widget(self.check_btn)
@@ -398,11 +427,11 @@ class FillInTheBlank(Screen):
     def on_check_release(self, check_btn_instance):
         result = self.checkAnswer()
         if result == "Correct":
-            check_btn_instance.result_dialog.ids.result.text = "[b][color=#00FF00]CORRECT[/color][/b]"
-            check_btn_instance.result_dialog.ids.description.text = "+1 point"
+            check_btn_instance.result_dialog.ids.result.text = "[b][color=#00FF00]SAKTO[/color][/b]"
+            check_btn_instance.result_dialog.ids.description.text = "+1 puntos"
         else:
-            check_btn_instance.result_dialog.ids.result.text = "[b][color=#FF0000]INCORRECT[/color][/b]"
-            check_btn_instance.result_dialog.ids.description.text = "The correct answer\nis [i]{}[/i].".format(self.correct_answer)
+            check_btn_instance.result_dialog.ids.result.text = "[b][color=#FF0000]SAYOP[/color][/b]"
+            check_btn_instance.result_dialog.ids.description.text = "Ang sakto nga tubag\nkay [i]{}[/i].".format(self.correct_answer)
         
         check_btn_instance.result_dialog.copyCurrentScreen(self)
         check_btn_instance.result_dialog.open()
@@ -455,12 +484,14 @@ class FillInTheBlank(Screen):
 
 
 class MatchingType(Screen):
+    source = "quiz/" #source of the image
     entries = {}
     entry_names = []
     entry_images = []
     selected_answer = {}
 
     check_btn = None
+    instruction_lbl = None
 
     def on_enter(self):
         self.manager.parent.parent.updateScoreBoard()
@@ -475,7 +506,6 @@ class MatchingType(Screen):
         temp_entries = db_entries.split(";")
         for entry in temp_entries:
             temp_entry = entry.split(",")
-            print(temp_entry)
             self.entries[temp_entry[0].strip()] = temp_entry[1].strip()
             self.entry_names.append(temp_entry[0].strip())
             self.entry_images.append(temp_entry[1].strip())
@@ -484,6 +514,7 @@ class MatchingType(Screen):
         print("Entry Images:", str(self.entry_images))
 
     def loadData(self, item):
+        # self.source = "{}/{}/".format(item[1], item[2])
         self.initEntries(item[0])
         random.shuffle(self.entry_names)
         random.shuffle(self.entry_images)
@@ -494,14 +525,16 @@ class MatchingType(Screen):
         self.ids.entry_name_3.text = self.entry_names[2]
         self.ids.entry_name_4.text = self.entry_names[3]
         self.ids.entry_name_5.text = self.entry_names[4]
-        self.ids.entry_img_1.source = self.entry_images[0]
-        self.ids.entry_img_2.source = self.entry_images[1]
-        self.ids.entry_img_3.source = self.entry_images[2]
-        self.ids.entry_img_4.source = self.entry_images[3]
-        self.ids.entry_img_5.source = self.entry_images[4]
+        self.ids.entry_img_1.source = self.source + self.entry_images[0]
+        self.ids.entry_img_2.source = self.source + self.entry_images[1]
+        self.ids.entry_img_3.source = self.source + self.entry_images[2]
+        self.ids.entry_img_4.source = self.source + self.entry_images[3]
+        self.ids.entry_img_5.source = self.source + self.entry_images[4]
         self.check_btn = CheckBtn()
         self.check_btn.bind(on_release = self.on_check_release)
-    
+        self.instruction_lbl = Instruction(text="[b]PAGTUKMA[/b]. Pagdibuho ug linya para masumpay ang pulong sa iyang sakto nga imahe.\n[b]MATCHING TYPE[/b]. Draw a line to connect each word with their corresponding image.")
+        self.ids.check_btn.add_widget(self.instruction_lbl)
+
     def resetWidgets(self):
         self.ids.entry_name_1.text = ""
         self.ids.entry_name_2.text = ""
@@ -513,8 +546,8 @@ class MatchingType(Screen):
         self.ids.entry_img_3.source = ""
         self.ids.entry_img_4.source = ""
         self.ids.entry_img_5.source = ""
-        if self.check_btn in self.ids.check_btn.children:
-            self.ids.check_btn.remove_widget(self.check_btn)
+        if self.ids.check_btn.children:
+            self.ids.check_btn.clear_widgets()
         for child in self.ids.mat_canvas.children:
             if type(child) is MATBtnNumber or type(child) is MATBtnLetter:
                 child.reset()
@@ -522,6 +555,7 @@ class MatchingType(Screen):
     def addToSelectedAnswer(self, name, image):
         self.selected_answer[name] = image
         if len(self.selected_answer) == len(self.entries):
+            self.ids.check_btn.remove_widget(self.instruction_lbl)
             self.ids.check_btn.add_widget(self.check_btn)
         print("Answer: ", str(self.selected_answer))
     
@@ -534,10 +568,10 @@ class MatchingType(Screen):
     def on_check_release(self, check_btn_instance):
         points = self.checkAnswer()
         if points:
-            check_btn_instance.result_dialog.ids.result.text = "[b][color=#00FF00]{} correct[/color][/b]".format(points)
+            check_btn_instance.result_dialog.ids.result.text = "[b][color=#00FF00]{} SAKTO[/color][/b]".format(points)
         else:
-            check_btn_instance.result_dialog.ids.result.text = "[b][color=#FF0000]0 correct[/color][/b]"
-        check_btn_instance.result_dialog.ids.description.text = "+{} point(s)".format(points)
+            check_btn_instance.result_dialog.ids.result.text = "[b][color=#FF0000]0 SAYOP[/color][/b]"
+        check_btn_instance.result_dialog.ids.description.text = "+{} puntos(s)".format(points)
         
         check_btn_instance.result_dialog.copyCurrentScreen(self)
         check_btn_instance.result_dialog.open()
@@ -559,13 +593,31 @@ class MatchingType(Screen):
 
 
 class Menu(Screen):
-    pass
+    def on_exit_pressed(self):
+        self.manager.parent.parent.manager.get_screen("Subcategory").on_back_pressed()
+        self.manager.parent.parent.manager.transition.direction = "right"
+        self.manager.parent.parent.manager.current = "Category"
 
 class BlankScreen(Screen):
     pass
 
 class FinalResult(Screen):
-    pass
+    def on_pre_enter(self, *args):
+        if self.manager.parent.parent.score >= self.manager.parent.parent.passing_score:
+            self.ids.result.text = "Nakapasar ka sa pasulit. Pwede na ka mopadayun sa sunod nga kategoriya.\nYou passed the quiz. You can now proceed to the next category."
+            cat = self.manager.parent.parent.cat
+            subcat = self.manager.parent.parent.subcat
+            self.manager.parent.parent.manager.get_screen("Category").unlockSubcatButton(cat, subcat)
+        else:
+            score_needed = self.manager.parent.parent.passing_score
+            self.ids.result.text = """Nakahuman ka sa pasulit. Kailangan ka ug {} puntos para makasulod sa sunod nga kategoriya.\nYou completed the quiz. You need at least {} point(s) to unlock a new category.
+            """.format(score_needed,score_needed)
+    
+    def on_back_pressed(self):
+        self.manager.parent.parent.manager.get_screen("Subcategory").on_back_pressed()
+        self.manager.parent.parent.manager.transition.direction = "right"
+        self.manager.parent.parent.manager.current = "Category"
+        self.manager.current = 'menu' #reset to menu screen
 
 
 # LAYOUTS
@@ -607,6 +659,21 @@ class CheckResultDialog(MDDialog):
         self.current_screen.goToNextItem()
 
 
+# LABEL
+class Instruction(Label):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.pos_hint = {"center_x": .5, "center_y": .5}
+        self.markup = True
+        self.color = 0,0,0,1
+        self.text_size = self.size
+        self.halign = 'center'
+        self.bind(
+            size = lambda *x: self.setter('text_size')(self, (self.width, None)),
+            # texture_size=lambda *x: self.setter('height')(self, self.texture_size[1])
+        )
+
+
 # BUTTONS
 class ChoiceToggleBtn(ToggleButton):
     def __init__(self, **kwargs):
@@ -624,7 +691,7 @@ class CheckBtn(MDTextButton):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.markup = True
-        self.text = "[u]Check Answer[/u]"
+        self.text = "[b][u]SUMITER ANG TUBAG[/u][/b]"
         self.pos_hint = {"center_x": .5, "center_y": .5}
         self.result_dialog = CheckResultDialog()
 
