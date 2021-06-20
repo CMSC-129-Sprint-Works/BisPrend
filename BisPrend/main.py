@@ -59,7 +59,7 @@ class LoadingPage(Screen):
         if(newPlayer.hasNoUser()):
             self.manager.current = "Reg"
         else:
-            self.manager.get_screen('Selector').ids.welcome_name.text = "Welcome, " + newPlayer.getName()
+            self.manager.get_screen('Selector').ids.welcome_name.text = "Maayong Pag-abot (Welcome),\n" + newPlayer.getName()
             self.manager.current = 'Selector'
         self.manager.transition = SlideTransition()
 
@@ -285,8 +285,8 @@ class QuizPortal(RelativeLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         box = BoxLayout(orientation = "vertical", size_hint = (.8, .3), pos_hint = {"center_x": .5, "center_y": .6})
-        lbl = Label(text = "Well Done!", color = (.12,.12,.12,1), font_name = "Mont", font_size = "30dp")
-        self.btn = Button(text = "Take Quiz", pos_hint = {"center_x": .5})
+        lbl = Label(text = "  MAAYO!\nWell Done!", color = (.12,.12,.12,1), font_name = "Mont", font_size = "30dp")
+        self.btn = Button(text = "Tubaga ang Pasulit\n      (Take Quiz)", pos_hint = {"center_x": .5})
         self.btn.size_hint = (None, None)
         self.btn.width = self.btn.texture_size[0] + 150
         self.btn.height = self.btn.texture_size[1] + 50

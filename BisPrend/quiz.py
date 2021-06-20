@@ -165,7 +165,7 @@ class QuizPage(Screen):
         self.pause_dialog.ids.exit_btn.bind(on_release = self.on_exit_quiz)
         self.pause_dialog.open()
     
-    def updateScore(self, points):
+    def updateScore(self, points:int):
         self.score += points
 
     def on_exit_quiz(self, exit_btn_instance):
@@ -209,7 +209,7 @@ class MultipleChoice(Screen):
         self.ids.choice_4.text = self.choices[3].strip()
         self.check_btn = CheckBtn()
         self.check_btn.bind(on_release = self.on_check_release)
-        self.instruction_lbl = Instruction(text="MULTIPLE CHOICE. Choose the word that best describes the image.")
+        self.instruction_lbl = Instruction(text="[b]DAGHANG KAPILIAN[/b]. Pilia ang pulong nga maghulagway sa imahe.\n[b]MULTIPLE CHOICE[/b]. Choose the word that best describes the image.")
         self.ids.check_btn.add_widget(self.instruction_lbl)
 
     def resetWidgets(self):
@@ -287,7 +287,7 @@ class TrueOrFalse(Screen):
         self.ids.entry_name.text = self.entry_name
         self.check_btn = CheckBtn()
         self.check_btn.bind(on_release = self.on_check_release)
-        self.instruction_lbl = Instruction(text="TRUE OR FALSE. Choose [i]Sakto[/i] if the word describes the image, otherwise [i]Sayop[/i]")
+        self.instruction_lbl = Instruction(text="[b]SAKTO O SAYOP[/b]. Pilia ang [i]Sakto[/i] kung ang pulong kay naghulagway sa imahe, [i]Sayop[/i] kung dili .\n[b]TRUE OR FALSE[/b]. Choose [i]Sakto[/i] if the word describes the image, otherwise, [i]Sayop[/i].")
         self.ids.check_btn.add_widget(self.instruction_lbl)
 
     def resetWidgets(self):
@@ -385,7 +385,7 @@ class FillInTheBlank(Screen):
         self.ids.choice_6.text = self.choices[5].strip()
         self.check_btn = CheckBtn()
         self.check_btn.bind(on_release = self.on_check_release)
-        self.instruction_lbl = Instruction(text="FILL IN THE BLANKS. Select letters to complete the word that describes the image.")
+        self.instruction_lbl = Instruction(text="[b]SUDLI ANG BLANGKO[/b]. Pilia ang mga letra nga mokompleto sa pulong nga naghulagway sa imahe.\n[b]FILL IN THE BLANKS[/b]. Select letters to complete the word that describes the image.")
         self.ids.check_btn.add_widget(self.instruction_lbl)
         self.loadEntryNameDisplay()
 
@@ -532,7 +532,7 @@ class MatchingType(Screen):
         self.ids.entry_img_5.source = self.source + self.entry_images[4]
         self.check_btn = CheckBtn()
         self.check_btn.bind(on_release = self.on_check_release)
-        self.instruction_lbl = Instruction(text="MATCHING TYPE. Draw a line to connect each word with their corresponding image.")
+        self.instruction_lbl = Instruction(text="[b]PAGTUKMA[/b]. Pagdibuho ug linya para masumpay ang pulong sa iyang sakto nga imahe.\n[b]MATCHING TYPE[/b]. Draw a line to connect each word with their corresponding image.")
         self.ids.check_btn.add_widget(self.instruction_lbl)
 
     def resetWidgets(self):
@@ -604,14 +604,18 @@ class BlankScreen(Screen):
 class FinalResult(Screen):
     def on_pre_enter(self, *args):
         if self.manager.parent.parent.score >= self.manager.parent.parent.passing_score:
-            self.ids.result.text = "You passed the quiz. You've unlocked the next category."
+            self.ids.articleText.text = "[i]Pagpahalipay! (Congratulations!)[/i]"
+            self.ids.result.text = "Nakapasar ka sa pasulit. Pwede na ka mopadayun sa sunod nga kategoriya.\n(You passed the quiz. You can now proceed to the next category.)"
             cat = self.manager.parent.parent.cat
             subcat = self.manager.parent.parent.subcat
             self.manager.parent.parent.manager.get_screen("Category").unlockSubcatButton(cat, subcat)
+            self.ids.final_score.text = str(self.manager.parent.parent.score)
         else:
+            self.ids.articleText.text = "[i]Maayong pagsulay (Nice try!)[/i]"
             score_needed = self.manager.parent.parent.passing_score
-            self.ids.result.text = """You completed the quiz. You need at least {} point(s) to unlock a new category.
-            """.format(score_needed)
+            self.ids.result.text = """Nakahuman ka sa pasulit. (Kailangan ka ug {} puntos para makasulod sa sunod nga kategoriya.\nYou completed the quiz. You need at least {} point(s) to unlock a new category.)
+            """.format(score_needed,score_needed)
+            self.ids.final_score.text = str(self.manager.parent.parent.score)
     
     def on_back_pressed(self):
         self.manager.parent.parent.manager.get_screen("Subcategory").on_back_pressed()
@@ -691,7 +695,7 @@ class CheckBtn(MDTextButton):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.markup = True
-        self.text = "[b][u]CHECK ANSWER[/u][/b]"
+        self.text = "[b][u]SUMITER ANG TUBAG\n  SUBMIT ANSWER[/u][/b]"
         self.pos_hint = {"center_x": .5, "center_y": .5}
         self.result_dialog = CheckResultDialog()
 
