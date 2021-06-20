@@ -11,7 +11,7 @@ from kivy.uix.image import Image
 from kivy.uix.button import Button
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
-from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, FallOutTransition
 from kivy.uix.stacklayout import StackLayout
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.boxlayout import BoxLayout
@@ -31,8 +31,11 @@ import math
 import sqlite3
 
 Config.set('graphics', 'resizable', True)
+# Config.set('kivy','window_icon','bg/bisprend-logo.png')
 
 newPlayer = User() #global scope (for testing)
+BLUE_THEME_COLOR = 72/255, 127/255, 165/255
+YELLOW_THEME_COLOR = 1, 0.8, 0.4
 
 #Screens
 class PageManager(ScreenManager):
@@ -46,28 +49,35 @@ class PageManager(ScreenManager):
             print("Tracker: " + str(self.category_tracker))
 
 
-class RegPage(Screen):    
-    def on_enter(self):
-        Clock.schedule_once(self.skip)
+class LoadingPage(Screen):
+    def on_enter(self, *args):
+        Clock.schedule_once(self.skip, 5)
 
+    def skip(self, *args):
+        global newPlayer
+        self.manager.transition = FallOutTransition(duration = .01)
+        if(newPlayer.hasNoUser()):
+            self.manager.current = "Reg"
+        else:
+            self.manager.get_screen('Selector').ids.welcome_name.text = "Welcome, " + newPlayer.getName()
+            self.manager.current = 'Selector'
+        self.manager.transition = SlideTransition()
+
+
+class RegPage(Screen):
     def registerUser(self):
         global newPlayer
         newPlayer.createUserFile(self.username.text)
         print(f"Name: {newPlayer.getName()} \nProgress: {newPlayer.getProgress()}")
-
-    def skip(self,dt):
-        if(not newPlayer.hasUser()):
-            self.manager.current = 'Selector'
+        self.manager.get_screen('Selector').ids.welcome_name.text = "Welcome, " + newPlayer.getName()
+        self.manager.transition.direction = "left"
+        self.manager.current = 'Selector'
 
 
 class MenuSelector(Screen):
     def on_enter(self):
         self.manager.category_tracker = [] #reset the tracker to empty
         print("Tracker: " + str(self.manager.category_tracker))
-
-    def playername(self):
-        global newPlayer
-        return newPlayer.getName()
 
     def on_balay_btn_pressed(self):
         self.manager.updateTracker("balay")
@@ -88,9 +98,9 @@ class MenuSelector(Screen):
 class CategoryPage(Screen):
     categories = {}
     def __init__(self, **kw):
+        super().__init__(**kw)
         global newPlayer
         prog = newPlayer.getProgress()
-        super().__init__(**kw)
         self.bind(size = self.on_size_change)
         self.progress = {'balay': prog[0], 'skuylahan': prog[1], 'tindahan': prog[2]} #change the numbers to the values in user.xml
     
@@ -121,6 +131,9 @@ class CategoryPage(Screen):
         if btn_to_unlock.locked:
             btn_to_unlock.unlock()
             btn_to_unlock.bind(on_release = self.on_subcat_btn_pressed)
+            # update user progress and user file
+            global newPlayer
+            newPlayer.updateUserProgress(cat)
 
     def updatePadding(self):
         num_btns = math.floor(self.width/210)
@@ -199,8 +212,7 @@ class SubcategoryPage(Screen):
             imagesrc = i[3]
             sampbis = i[4]
             sampeng = i[5]
-            container = RelativeLayout(orientation = "vertical", size_hint = (.8, .8),
-            pos_hint = {'center_x': .5, 'center_y': .5})
+            container = RelativeLayout(size_hint = (.8, .8), pos_hint = {'center_x': .5, 'center_y': .5})
             image = Image(source=imagesrc)
             sentenceBtn = sentenceButton(sampeng, sampbis)
 
@@ -273,11 +285,21 @@ class QuizPortal(RelativeLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         box = BoxLayout(orientation = "vertical", size_hint = (.8, .3), pos_hint = {"center_x": .5, "center_y": .6})
-        lbl = Label(text = "Well Done!", color = (0,0,0,1), font_name = "Mont", font_size = "30dp")
-        self.btn = Button(text = "take quiz", size_hint = (.5, 1/3), pos_hint = {"center_x": .5})
+        lbl = Label(text = "Well Done!", color = (.12,.12,.12,1), font_name = "Mont", font_size = "30dp")
+        self.btn = Button(text = "Take Quiz", pos_hint = {"center_x": .5})
+        self.btn.size_hint = (None, None)
+        self.btn.width = self.btn.texture_size[0] + 150
+        self.btn.height = self.btn.texture_size[1] + 50
+        self.btn.background_normal = ''
+        self.btn.background_down = ''
+        self.btn.bind(state = self.toggleBtnColor)
+        self.btn.background_color = BLUE_THEME_COLOR + (1,)
         box.add_widget(lbl)
         box.add_widget(self.btn)
         self.add_widget(box)
+    
+    def toggleBtnColor(self, *args):
+        self.btn.background_color = BLUE_THEME_COLOR + ((.8,) if self.btn.state == 'down' else (1,))
 
 
 
@@ -287,7 +309,7 @@ class BisprendApp(MDApp):
         self.theme_cls.primary_hue= "A700"
         self.theme_cls.accent_palette = "LightGreen"
         self.theme_cls.accent_hue = "A700"
-        # self.root = Builder.load_file("bisprend.kv")
+        self.icon = "bg/bisprend-logo.png"
 
 #Registering Font
 LabelBase.register(name="Mont",

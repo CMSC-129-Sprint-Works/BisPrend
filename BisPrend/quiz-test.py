@@ -20,7 +20,8 @@ Builder.load_string("""
 
 # Declare screen manager and screens
 class ScrnMngr(ScreenManager):
-    category_tracker = ['Balay', 'Pamilya-timbaya']
+    # category_tracker = ['Balay', 'Pamilya-timbaya']
+    category_tracker = ['Balay', 'kan-anan']
 
 class Portal(Screen):
     pass
