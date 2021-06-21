@@ -1,10 +1,11 @@
 import xml.etree.ElementTree as ET
+import re
 
 #user dictionary
 class User:
     def __init__(self):
         self.__name = ""
-        self.__progress = 0
+        self.__progress = [0,0,0]
         self.__nouser = True
         self.checkFile()
 
@@ -12,17 +13,22 @@ class User:
         self.__name = newname
         self.updateUserFile()
 
-    def updateuserprogress(self, newprog:int):
-        self.__progress = newprog
+    def updateUserProgress(self, cat:str):
+        if cat == 'balay':
+            self.__progress[0] += 1
+        elif cat == 'skuylahan':
+            self.__progress[1] += 1
+        elif cat == 'tindahan':
+            self.__progress[2] += 1
         self.updateUserFile()
 
     def getName(self):
-        return self.__name 
+        return self.__name
 
     def getProgress(self):
         return self.__progress
 
-    def hasUser(self):
+    def hasNoUser(self):
         return self.__nouser
     
     def checkFile(self):
@@ -33,7 +39,11 @@ class User:
             for elem in root:
                 subelem = elem.findall("datum")
                 self.__name = subelem[0].text
-                self.__progress = subelem[1].text
+                temp = subelem[1].text
+                temp = temp.split(',')
+                for i in range(0,len(temp)):
+                    temp[i] = int(temp[i])
+                self.__progress = temp
 
             self.__nouser = False
 
@@ -43,6 +53,8 @@ class User:
             self.__nouser = True
     
     def updateUserFile(self):
+        newprog = re.sub("\[|\s|\]", "", str(self.__progress))
+
         try:
             tree = ET.parse("users.xml")
             root = tree.getroot()
@@ -50,8 +62,9 @@ class User:
             for elem in root:
                 subelem = elem.findall("datum")
                 subelem[0].text = self.__name
-                subelem[1].text = self.__progress
-
+                subelem[1].text = str(newprog)
+            
+            tree.write("users.xml")
             self.__nouser = False
             print("updated user file")
             
@@ -62,7 +75,7 @@ class User:
 
     def createUserFile(self,name:str):
         self.__name = name
-        self.__progress = 0
+        self.__progress = [0,0,0]
         self.__nouser = False
         data = ET.Element("data")
         item = ET.SubElement(data,"items")
@@ -71,7 +84,7 @@ class User:
         log1.set("name","name")
         log2.set("name","progress")
         log1.text = name
-        log2.text = "0"
+        log2.text = "0,0,0"
 
         toET = ET.ElementTree()
         toET._setroot(data)

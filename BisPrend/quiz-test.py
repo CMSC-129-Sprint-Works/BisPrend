@@ -11,7 +11,6 @@ Builder.load_string("""
 <Portal>
     name: 'portal'
     BoxLayout:
-        
         Button:
             text: 'Quiz Portal'
             on_release:
@@ -21,7 +20,8 @@ Builder.load_string("""
 
 # Declare screen manager and screens
 class ScrnMngr(ScreenManager):
-    category_tracker = ['pamilya', 'pamilya-timbaya']
+    # category_tracker = ['Balay', 'Pamilya-timbaya']
+    category_tracker = ['Balay', 'kan-anan']
 
 class Portal(Screen):
     pass
@@ -30,8 +30,9 @@ class QuizTestApp(MDApp):
     def build(self):
         # Create the screen manager
         sm = ScrnMngr()
+        q = QuizPage(cat = sm.category_tracker[0], subcat = sm.category_tracker[1], name = "quiz")
         sm.add_widget(Portal())
-        sm.add_widget(QuizPage())
+        sm.add_widget(q)
         return sm
 
 

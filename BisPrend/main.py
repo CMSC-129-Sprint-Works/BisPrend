@@ -179,7 +179,6 @@ class CategoryPage(Screen):
 
 class SubcategoryPage(Screen):
     subcategories = {}
-    isFirstCat = True
     def on_pre_enter(self):
         if not self.ids.carousel_container.children:
             self.cat = self.manager.category_tracker[0]
@@ -217,7 +216,6 @@ class SubcategoryPage(Screen):
             sampeng = i[5]
             container = RelativeLayout(size_hint = (.8, .8), pos_hint = {'center_x': .5, 'center_y': .5})
             if self.subcat == 'kan-anan':
-
                 ins = MDLabel(text="Pislita ang Imahe", halign="center",
                               font_name="Mont", font_size="30sp", font_style="H4",
                               pos_hint={"center_x": .5, "center_y": 1.05},
