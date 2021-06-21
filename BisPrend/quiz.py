@@ -605,6 +605,7 @@ class FinalResult(Screen):
     def on_pre_enter(self, *args):
         if self.manager.parent.parent.score >= self.manager.parent.parent.passing_score:
             self.ids.result.text = "Nakapasar ka sa pasulit. Pwede na ka mopadayun sa sunod nga kategoriya.\nYou passed the quiz. You can now proceed to the next category."
+            self.ids.final_score.text = str(self.manager.parent.parent.score)
             cat = self.manager.parent.parent.cat
             subcat = self.manager.parent.parent.subcat
             self.manager.parent.parent.manager.get_screen("Category").unlockSubcatButton(cat, subcat)
