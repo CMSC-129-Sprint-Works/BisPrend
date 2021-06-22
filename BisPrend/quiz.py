@@ -608,7 +608,8 @@ class FinalResult(Screen):
             self.ids.result.text = "Nakapasar ka sa pasulit. Pwede na ka mopadayun sa sunod nga kategoriya.\n(You passed the quiz. You can now proceed to the next category.)"
             cat = self.manager.parent.parent.cat
             subcat = self.manager.parent.parent.subcat
-            self.manager.parent.parent.manager.get_screen("Category").unlockSubcatButton(cat, subcat)
+            if(subcat != "resibidor" and subcat != "room" and subcat != "sanina"):
+                self.manager.parent.parent.manager.get_screen("Category").unlockSubcatButton(cat, subcat)
             self.ids.final_score.text = str(self.manager.parent.parent.score)
         else:
             self.ids.articleText.text = "[i]Maayong pagsulay (Nice try!)[/i]"
