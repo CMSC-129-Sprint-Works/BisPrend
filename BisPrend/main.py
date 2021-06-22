@@ -2,8 +2,8 @@ from kivymd.app import MDApp
 
 from kivy.lang import Builder
 from kivy.core.text import LabelBase
-#from kivy.properties import ObjectProperty
 from kivy.config import Config
+from kivy.graphics import *
 from kivy.uix.carousel import Carousel
 from kivy.uix.image import Image
 
@@ -11,9 +11,10 @@ from kivy.uix.image import Image
 from kivy.uix.button import Button
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
-from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, FallOutTransition
 from kivy.uix.stacklayout import StackLayout
 from kivy.uix.relativelayout import RelativeLayout
+from kivy.uix.boxlayout import BoxLayout
 
 #kivymd
 from kivymd.uix.label import MDLabel
@@ -24,16 +25,17 @@ from kivymd.uix.dialog import MDDialog
 
 from kivy.clock import Clock
 from user import User
-# import quiz
+from quiz import QuizPage
 import os
 import math
 import sqlite3
 
-
 Config.set('graphics', 'resizable', True)
+# Config.set('kivy','window_icon','bg/bisprend-logo.png')
 
 newPlayer = User() #global scope (for testing)
-
+BLUE_THEME_COLOR = 72/255, 127/255, 165/255
+YELLOW_THEME_COLOR = 1, 0.8, 0.4
 
 #Screens
 class PageManager(ScreenManager):
@@ -47,17 +49,29 @@ class PageManager(ScreenManager):
             print("Tracker: " + str(self.category_tracker))
 
 
-class RegPage(Screen):    
-    def on_enter(self):
-        Clock.schedule_once(self.skip)
+class LoadingPage(Screen):
+    def on_enter(self, *args):
+        Clock.schedule_once(self.skip, 5)
 
+    def skip(self, *args):
+        global newPlayer
+        self.manager.transition = FallOutTransition(duration = .01)
+        if(newPlayer.hasNoUser()):
+            self.manager.current = "Reg"
+        else:
+            self.manager.get_screen('Selector').ids.welcome_name.text = "Maayong Pag-abot (Welcome),\n" + newPlayer.getName()
+            self.manager.current = 'Selector'
+        self.manager.transition = SlideTransition()
+
+
+class RegPage(Screen):
     def registerUser(self):
+        global newPlayer
         newPlayer.createUserFile(self.username.text)
         print(f"Name: {newPlayer.getName()} \nProgress: {newPlayer.getProgress()}")
-
-    def skip(self,dt):
-        if(not newPlayer.hasUser()):
-            self.manager.current = 'Selector'
+        self.manager.get_screen('Selector').ids.welcome_name.text = "Welcome, " + newPlayer.getName()
+        self.manager.transition.direction = "left"
+        self.manager.current = 'Selector'
 
 
 class MenuSelector(Screen):
@@ -65,35 +79,91 @@ class MenuSelector(Screen):
         self.manager.category_tracker = [] #reset the tracker to empty
         print("Tracker: " + str(self.manager.category_tracker))
 
-    def playername(self):
-        return newPlayer.getName()
+    def on_balay_btn_pressed(self):
+        self.manager.updateTracker("balay")
+        self.manager.transition.direction = "left"
+        self.manager.current = "Category"
+
+    def on_skuylahan_btn_pressed(self):
+        self.manager.updateTracker("skuylahan")
+        self.manager.transition.direction = "left"
+        self.manager.current = "Category"
+
+    def on_tindahan_btn_pressed(self):
+        self.manager.updateTracker("tindahan")
+        self.manager.transition.direction = "left"
+        self.manager.current = "Category"
 
 
 class CategoryPage(Screen):
+    categories = {}
     def __init__(self, **kw):
         super().__init__(**kw)
+        global newPlayer
+        prog = newPlayer.getProgress()
         self.bind(size = self.on_size_change)
+        self.progress = {'balay': prog[0], 'skuylahan': prog[1], 'tindahan': prog[2]} #change the numbers to the values in user.xml
     
-    def on_size_change(self, *args):
+    def initSubcatButtons(self):
+        for subcat in self.subcategories_list:
+            btn_img_loc = "{}/buttons/{}.jpg".format(self.cat_location, subcat)
+            # if unlocked
+            if self.subcategories_list.index(subcat) <= self.categories[self.cat_name]['progress']:
+                self.categories[self.cat_name]['buttons'].add_widget(
+                    SubcategoryButton(
+                        subcat_name = subcat, locked = False,
+                        icon = btn_img_loc, on_release = self.on_subcat_btn_pressed
+                    )
+                )
+            # else if locked
+            else:
+                self.categories[self.cat_name]['buttons'].add_widget(
+                    SubcategoryButton(subcat_name = subcat, locked = True, icon = btn_img_loc)
+                )
+        print("Subcategory buttons initialized")
+    
+    def unlockSubcatButton(self, cat, curr_subcat):
+        for i in range(len(self.categories[cat]['buttons'].children)-1):
+            subcat = self.categories[cat]['buttons'].children[i+1]
+            if subcat.subcat_name == curr_subcat:
+                btn_to_unlock = self.categories[cat]['buttons'].children[i]
+                break
+        if btn_to_unlock.locked:
+            btn_to_unlock.unlock()
+            btn_to_unlock.bind(on_release = self.on_subcat_btn_pressed)
+            # update user progress and user file
+            global newPlayer
+            newPlayer.updateUserProgress(cat)
+
+    def updatePadding(self):
         num_btns = math.floor(self.width/210)
         if num_btns:
             rem_space = self.width - (num_btns*210)
-            self.ids.subcat_btns_container.padding = rem_space/2, "10dp"
+            for cat in self.categories.keys():
+                self.categories[cat]['buttons'].padding = rem_space/2, "10dp"
 
     def on_pre_enter(self, *args):
-        self.cat_name = self.manager.category_tracker[0]
-        self.cat_location = os.getcwd() + "/" + self.cat_name
-        self.subcategories_list = [f.name for f in os.scandir(self.cat_location) if f.is_dir()]
-        self.subcategories_list.remove("buttons")
-        # set background
-        self.ids.subcat_btns_scrollview.bg = "{}/{}-bg.jpg".format(self.cat_name, self.cat_name)
+        if not self.ids.subcat_btns_scrollview.children:
+            self.cat_name = self.manager.category_tracker[0]
+            self.cat_location = os.getcwd() + "/" + self.cat_name
+            self.subcategories_list = [f.name for f in os.scandir(self.cat_location) if f.is_dir()]
+            self.subcategories_list.remove("buttons")
+            self.subcategories_list.sort()
+            
+            if self.cat_name not in self.categories.keys():
+                self.categories[self.cat_name] = {}
+                self.categories[self.cat_name]['progress'] = self.progress[self.cat_name]
+                self.categories[self.cat_name]['buttons'] = SubcategoryButtonsContainer()
+                self.updatePadding()
+                self.initSubcatButtons()
+            
+            # add buttons
+            self.ids.subcat_btns_scrollview.add_widget(self.categories[self.cat_name]['buttons'])
+            # set background
+            self.ids.subcat_btns_scrollview.bg = "{}/{}-bg.jpg".format(self.cat_name, self.cat_name)
 
-    def on_enter(self):
-        # load subcategory buttons
-        if not self.ids.subcat_btns_container.children:
-            for subcat in self.subcategories_list:
-                btn_img_loc = "{}/buttons/{}.jpg".format(self.cat_location, subcat)
-                self.ids.subcat_btns_container.add_widget(SubcategoryButton(subcat_name = subcat, icon = btn_img_loc, on_release = self.on_subcat_btn_pressed))
+    def on_size_change(self, *args):
+        self.updatePadding()
 
     def on_subcat_btn_pressed(self, subcat_btn_instance):
         self.manager.updateTracker(subcat_btn_instance.subcat_name)
@@ -102,28 +172,33 @@ class CategoryPage(Screen):
 
     def on_back_pressed(self):
         # clear subcategory buttons
-        self.ids.subcat_btns_container.clear_widgets()
-
-    def on_leave(self):
-        # clear subcategory buttons
-        # self.ids.subcat_btns_container.clear_widgets()
-        pass
+        self.ids.subcat_btns_scrollview.clear_widgets()
 
 
 class SubcategoryPage(Screen):
     subcategories = {}
     def on_pre_enter(self):
-        self.cat = self.manager.category_tracker[0]
-        self.subcat = self.manager.category_tracker[1].capitalize()
-        if self.subcat not in self.subcategories.keys():
-            self.subcategories[self.subcat] = self.CarouselMaker(self.cat, self.subcat)
+        if not self.ids.carousel_container.children:
+            self.cat = self.manager.category_tracker[0]
+            self.subcat = self.manager.category_tracker[1]
+            self.quiz_name = self.subcat + "-quiz"
+            if self.subcat not in self.subcategories.keys():
+                self.subcategories[self.subcat] = {}
+                self.subcategories[self.subcat]['carousel'] = self.CarouselMaker(self.cat, self.subcat)
+                self.subcategories[self.subcat]['quiz'] = QuizPage(cat=self.cat, subcat=self.subcat, name=self.quiz_name)
+                self.manager.add_widget(self.subcategories[self.subcat]['quiz'])
 
-        self.ids.carousel_container.add_widget(self.subcategories[self.subcat])
-        self.ids.carousel_container.bg = "{}/{}-bg.jpg".format(self.cat, self.cat)
+            self.ids.carousel_container.add_widget(self.subcategories[self.subcat]['carousel'])
+            self.ids.carousel_container.bg = "{}/{}-bg.jpg".format(self.cat, self.cat)
 
     def on_back_pressed(self):
         self.manager.category_tracker.pop()
         self.ids.carousel_container.clear_widgets()
+
+    def on_quiz_btn_pressed(self, *args):
+        print("Take Quiz")
+        self.manager.transition.direction = "left"
+        self.manager.current = self.quiz_name
 
     def CarouselMaker(self, category:str,subcategory:str):
         conn = sqlite3.connect('Information.db')
@@ -134,26 +209,55 @@ class SubcategoryPage(Screen):
 
         caros = Carousel(direction = "right")
         for i in listofall:
-            imagesrc = i[3]
+            imagesrc = i[3].replace('\\',"/")
             sampbis = i[4]
             sampeng = i[5]
-            container = RelativeLayout(orientation = "vertical", size_hint = (.8, .8),
-            pos_hint = {'center_x': .5, 'center_y': .5})
+            container = RelativeLayout(size_hint = (.8, .8), pos_hint = {'center_x': .5, 'center_y': .5})
             image = Image(source=imagesrc)
             sentenceBtn = sentenceButton(sampeng, sampbis)
 
             container.add_widget(image)
             container.add_widget(sentenceBtn)
             caros.add_widget(container)
-
+        
+        quiz_portal = QuizPortal()
+        quiz_portal.btn.bind(on_release = self.on_quiz_btn_pressed)
+        caros.add_widget(quiz_portal)
         return caros
 
 
+class SubcategoryButtonsContainer(StackLayout):
+    pass
+
+
 class SubcategoryButton(MDIconButton):
-    def __init__(self, subcat_name, **kwargs):
+    def __init__(self, subcat_name: str, locked: bool, **kwargs):
         super().__init__(**kwargs)
         self.subcat_name = subcat_name
         self.user_font_size = "180dp"
+        self.locked = locked
+        self.lock_icon = None
+        if self.locked:
+            self.lock()
+
+    def unlock(self):
+        self.remove_widget(self.lock_icon)
+        self.locked = False
+        self.lock_icon = None
+
+    def lock(self):
+        self.lock_icon = MDIconButton(
+            icon = 'lock', user_font_size = "100sp", theme_text_color = "Custom", text_color = (1,1,1,.4)
+        )
+        with self.lock_icon.canvas.before:
+            Color(0,0,0,.6)
+            self.rect = Rectangle(size = self.size, pos = self.pos)
+        self.bind(size = self.updateRect, pos = self.updateRect)
+        self.add_widget(self.lock_icon)
+
+    def updateRect(self, *args):
+        self.rect.size = self.size
+        self.rect.pos = self.pos
 
 
 class sentenceButton(Button):
@@ -177,6 +281,27 @@ class sentenceButton(Button):
         dialog.open()
 
 
+class QuizPortal(RelativeLayout):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        box = BoxLayout(orientation = "vertical", size_hint = (.8, .3), pos_hint = {"center_x": .5, "center_y": .6})
+        lbl = Label(text = "  MAAYO!\nWell Done!", color = (.12,.12,.12,1), font_name = "Mont", font_size = "30dp")
+        self.btn = Button(text = "Tubaga ang Pasulit\n      (Take Quiz)", pos_hint = {"center_x": .5})
+        self.btn.size_hint = (None, None)
+        self.btn.width = self.btn.texture_size[0] + 150
+        self.btn.height = self.btn.texture_size[1] + 50
+        self.btn.background_normal = ''
+        self.btn.background_down = ''
+        self.btn.bind(state = self.toggleBtnColor)
+        self.btn.background_color = BLUE_THEME_COLOR + (1,)
+        box.add_widget(lbl)
+        box.add_widget(self.btn)
+        self.add_widget(box)
+    
+    def toggleBtnColor(self, *args):
+        self.btn.background_color = BLUE_THEME_COLOR + ((.8,) if self.btn.state == 'down' else (1,))
+
+
 
 class BisprendApp(MDApp):
     def build(self):
@@ -184,7 +309,7 @@ class BisprendApp(MDApp):
         self.theme_cls.primary_hue= "A700"
         self.theme_cls.accent_palette = "LightGreen"
         self.theme_cls.accent_hue = "A700"
-        # self.root = Builder.load_file("bisprend.kv")
+        self.icon = "bg/bisprend-logo.png"
 
 #Registering Font
 LabelBase.register(name="Mont",
