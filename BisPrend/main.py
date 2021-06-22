@@ -209,7 +209,7 @@ class SubcategoryPage(Screen):
 
         caros = Carousel(direction = "right")
         for i in listofall:
-            imagesrc = i[3]
+            imagesrc = i[3].replace('\\',"/")
             sampbis = i[4]
             sampeng = i[5]
             container = RelativeLayout(size_hint = (.8, .8), pos_hint = {'center_x': .5, 'center_y': .5})
