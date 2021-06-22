@@ -69,7 +69,7 @@ class RegPage(Screen):
         global newPlayer
         newPlayer.createUserFile(self.username.text)
         print(f"Name: {newPlayer.getName()} \nProgress: {newPlayer.getProgress()}")
-        self.manager.get_screen('Selector').ids.welcome_name.text = "Welcome, " + newPlayer.getName()
+        self.manager.get_screen('Selector').ids.welcome_name.text = "Maayong Pag-abot (Welcome),\n" + newPlayer.getName()
         self.manager.transition.direction = "left"
         self.manager.current = 'Selector'
 
